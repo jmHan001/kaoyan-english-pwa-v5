@@ -57,10 +57,11 @@
 <section class="panel">
 <p class="section-label">持续互通</p>
 <h2>加密云同步</h2>
-<p class="muted">两台设备填写相同的服务地址、公开密钥、同步码和同步密码。密码只保存在当前设备，不会上传。</p>
+<p class="muted">云服务已接好。电脑生成一次安全配对信息，手机打开配对链接后即可持续互通；同步密码只保存在设备中，不会上传。</p>
 <form id="syncForm">
-<label>Supabase 项目地址<input class="field" id="endpoint" type="url" placeholder="https://xxxx.supabase.co" autocomplete="url"></label>
-<label>Supabase 公开 anon key<input class="field" id="anonKey" type="password" placeholder="eyJ..." autocomplete="off"></label>
+<input id="endpoint" type="hidden">
+<input id="anonKey" type="hidden">
+<div class="sync-actions"><button class="btn secondary" type="button" id="newPair">生成安全配对信息</button><button class="btn secondary" type="button" id="copyPair">复制手机配对链接</button></div>
 <label>同步码<div class="inline-field"><input class="field" id="syncId" placeholder="首次可自动生成" autocomplete="off"><button class="btn secondary" type="button" id="newCode">生成</button><button class="btn secondary" type="button" id="copyCode">复制</button></div></label>
 <label>同步密码<input class="field" id="passphrase" type="password" minlength="8" placeholder="至少 8 位，两台设备保持一致" autocomplete="new-password"></label>
 <label class="check"><input id="autoSync" type="checkbox" checked> 打开应用及联网恢复时自动同步</label>
@@ -70,12 +71,11 @@
 </div>
 
 <details class="panel setup">
-<summary>首次配置 Supabase（约 3 分钟）</summary>
+<summary>同步说明</summary>
 <ol>
-<li>创建一个免费 Supabase 项目，打开 SQL Editor。</li>
-<li>复制项目内 <code>supabase-sync.sql</code> 的全部内容并运行。</li>
-<li>从 Project Settings 的 API 页面复制 Project URL 和 anon public key。</li>
-<li>电脑先生成同步码并保存；手机填写完全相同的四项信息。</li>
+<li>电脑点击“生成安全配对信息”，再点击“保存并同步”。</li>
+<li>点击“复制手机配对链接”，通过微信、备忘录或隔空投送发到 iPhone。</li>
+<li>iPhone 用 Safari 打开链接，点击“保存并同步”。以后打开应用或恢复联网时会自动合并。</li>
 </ol>
 <p class="fineprint">同步使用随机同步码定位数据，并用你的密码执行 AES-GCM 端到端加密。请妥善保存同步码和密码，丢失后无法解密云端内容。</p>
 </details>

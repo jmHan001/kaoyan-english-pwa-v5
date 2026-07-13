@@ -1,5 +1,6 @@
 const CONFIG_KEY='ky5_sync_config';
 const META_KEY='ky5_sync_meta';
+const DEFAULT_CONFIG={endpoint:'https://lkhfdjbavyylzerogyun.supabase.co',anonKey:'sb_publishable_72R3k2970zgxToYj1QIgWQ_s4oqdHTE'};
 const DATA_KEYS=['ky5_state','ky5_settings','ky5_pool','ky5_reading','ky5_sentence','ky5_exam_text','ky5_theme'];
 const encoder=new TextEncoder(),decoder=new TextDecoder();
 
@@ -8,8 +9,8 @@ const b64=bytes=>{let s='';bytes.forEach(b=>s+=String.fromCharCode(b));return bt
 const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 const normalizedEndpoint=value=>String(value||'').trim().replace(/\/+$/,'');
 
-export function getSyncConfig(){return parse(localStorage.getItem(CONFIG_KEY),{})||{}}
-export function saveSyncConfig(config){const next={endpoint:normalizedEndpoint(config.endpoint),anonKey:String(config.anonKey||'').trim(),syncId:String(config.syncId||'').trim(),passphrase:String(config.passphrase||''),autoSync:config.autoSync!==false};localStorage.setItem(CONFIG_KEY,JSON.stringify(next));return next}
+export function getSyncConfig(){return{...DEFAULT_CONFIG,...(parse(localStorage.getItem(CONFIG_KEY),{})||{})}}
+export function saveSyncConfig(config){const next={endpoint:normalizedEndpoint(config.endpoint||DEFAULT_CONFIG.endpoint),anonKey:String(config.anonKey||DEFAULT_CONFIG.anonKey).trim(),syncId:String(config.syncId||'').trim(),passphrase:String(config.passphrase||''),autoSync:config.autoSync!==false};localStorage.setItem(CONFIG_KEY,JSON.stringify(next));return next}
 export function clearSyncConfig(){localStorage.removeItem(CONFIG_KEY);localStorage.removeItem(META_KEY)}
 export function isConfigured(config=getSyncConfig()){return Boolean(config.endpoint&&config.anonKey&&config.syncId&&config.passphrase?.length>=8)}
 export function createSyncId(){return crypto.randomUUID?.()||`${Date.now().toString(36)}-${b64(crypto.getRandomValues(new Uint8Array(18))).replace(/[+/=]/g,'').toLowerCase()}`}
