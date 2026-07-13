@@ -60,6 +60,8 @@ const s=getSettings();
 $('#mode').value=s.mode;
 $('#daily').value=String(s.daily);
 pool=getPool();
+const verifiedCompleted=pool.completed.filter(word=>(getState().records[word]?.level||0)>=3);
+if(verifiedCompleted.length!==pool.completed.length){pool.completed=verifiedCompleted;localStorage.setItem('ky5_pool',JSON.stringify(pool))}
 queue=pool.items.filter(x=>!pool.completed.includes(x));
 renderStats();
 renderTaskProgress();
