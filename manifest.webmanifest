@@ -1,0 +1,14 @@
+{
+  "name": "拾词 · 考研英语",
+  "short_name": "拾词",
+  "description": "高考到考研的双词库记忆、长难句与阅读训练",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f1e8",
+  "theme_color": "#26382d",
+  "lang": "zh-CN",
+  "icons": [
+    {"src":"icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
