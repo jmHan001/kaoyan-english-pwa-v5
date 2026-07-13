@@ -8,6 +8,8 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="memory.css">
+<link rel="stylesheet" href="enhancements.css">
+<script src="theme.js" defer></script>
 <script type="module" src="app.js">
 </script>
 </head>
@@ -56,7 +58,7 @@
 <div>
 <p class="phonetic" id="source">
 </p>
-<h2 class="word" id="word">加载中</h2>
+<div class="word-line"><h2 class="word" id="word">加载中</h2><span class="memory-badge" id="memoryBadge">连续正确 0/3</span></div>
 <div class="recall-cue" id="recallCue">先别点释义，盯住单词回忆 3 秒</div>
 <p class="phonetic" id="phonetic"></p>
 <div class="memory-pack hidden" id="memoryPack">
@@ -64,6 +66,7 @@
   <p class="syllable" id="syllable"></p>
   <p class="example" id="example"></p>
   <p class="example-cn" id="exampleCn"></p>
+  <div id="wordKnowledge"></div>
 </div>
 <div class="toolbar" style="justify-content:center;margin-top:22px">
 <button class="btn secondary" data-voice="en-US">美音</button>

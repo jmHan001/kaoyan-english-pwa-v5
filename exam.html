@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>拾词 · 真题训练</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="memory.css">
+<link rel="stylesheet" href="enhancements.css">
+<script src="theme.js" defer>
+</script>
+</head>
+<body>
+<main class="shell">
+<header class="topbar">
+<div class="brand">拾词 <small>真题训练</small>
+</div>
+<nav class="nav">
+<a href="index.html">学习</a>
+<a href="vocabulary.html">词库</a>
+<a href="sentence.html">长难句</a>
+<a href="reading.html">阅读</a>
+<a href="lookup.html">查词</a>
+<a aria-current="page" href="exam.html">真题</a>
+</nav>
+</header>
+<section class="panel">
+<h1>真题精读工作台</h1>
+<p>粘贴你拥有的真题文章或题目，系统会保存在本机，并把词汇变成可点击的查词入口。</p>
+<textarea class="field" id="examText" rows="12" style="width:100%" placeholder="粘贴真题英文原文">
+</textarea>
+<div class="toolbar" style="margin-top:12px">
+<button class="btn" id="analyze">开始精读</button>
+<button class="btn secondary" id="clear">清空</button>
+</div>
+</section>
+<section class="panel hidden" id="workspace" style="margin-top:16px">
+<div class="notice">点击任意英文单词查看完整释义、音标、考点和例句。</div>
+<article class="passage" id="rendered">
+</article>
+</section>
+</main>
+<div class="modal hidden" id="wordModal">
+<div class="modal-card">
+<button class="iconbtn" style="float:right" id="close">×</button>
+<div id="wordInfo">
+</div>
+</div>
+</div>
+<script type="module" src="exam.js">
+</script>
+</body>
+</html>

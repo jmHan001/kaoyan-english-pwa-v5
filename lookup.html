@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>拾词 · 查词</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="memory.css">
+<link rel="stylesheet" href="enhancements.css">
+<script src="theme.js" defer>
+</script>
+</head>
+<body>
+<main class="shell">
+<header class="topbar">
+<div class="brand">拾词 <small>查词</small>
+</div>
+<nav class="nav">
+<a href="index.html">学习</a>
+<a href="vocabulary.html">词库</a>
+<a href="sentence.html">长难句</a>
+<a href="reading.html">阅读</a>
+<a aria-current="page" href="lookup.html">查词</a>
+<a href="exam.html">真题</a>
+</nav>
+</header>
+<section class="panel">
+<h1>查一个词，顺便看透它。</h1>
+<div class="toolbar">
+<input class="field" id="query" placeholder="输入英文或中文" style="flex:1">
+<button class="btn" id="search">查询</button>
+</div>
+<div id="results" class="list">
+<div class="empty">输入单词或中文释义</div>
+</div>
+</section>
+<section class="panel hidden" id="detail" style="margin-top:16px">
+</section>
+</main>
+<script type="module" src="lookup.js">
+</script>
+</body>
+</html>

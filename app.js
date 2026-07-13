@@ -1,7 +1,8 @@
-import{loadVocabulary,findWord,getSettings,saveSettings,getState,migrateLegacy,exportAll}from'./vocabulary-manager.js';
+import{loadVocabulary,findWord,allWords,getSettings,saveSettings,getState,migrateLegacy,exportAll}from'./vocabulary-manager.js';
 import{getPool,remove,replace,toggleLock,add,fill}from'./learning-pool.js';
 import{rate,dueWords,wrongWords}from'./review-manager.js';
 import{stats}from'./stats.js';
+import{rootHint,keyPoint,nearWords}from'./knowledge.js';
 
 let pool,index=0,queue=[],reviewMode=false;
 const $=s=>document.querySelector(s),label={gaokao:'高考词',kaoyan:'考研词',both:'高考与考研共有'};
@@ -19,10 +20,15 @@ $('#done').classList.add('hidden');
 $('#word').textContent=w.word;
 $('#meaning').textContent=w.translation||'暂无释义';
 $('#source').textContent=label[w.source]||'自定义词';
+const rec=getState().records[w.word]||{};
+$('#memoryBadge').textContent=rec.tailStage?'长时记忆尾期':`连续正确 ${rec.correctStreak||0}/3`;
+$('#memoryBadge').classList.toggle('tail',!!rec.tailStage);
 $('#phonetic').textContent='';
 $('#syllable').textContent=`拆着记：${chunks(w.word)}`;
-$('#example').innerHTML=w.sentence?w.sentence.replace(new RegExp(`(${w.word})`,'ig'),'<strong>$1</strong>'):`把 ${w.word} 放进你今天的一句话里。`;
-$('#exampleCn').textContent=w.sentenceCn||''}
+const examples=w.sentences||[],phrases=w.phrases||[],near=nearWords(w,allWords());
+$('#example').innerHTML=examples[0]?.sentence?examples[0].sentence.replace(new RegExp(`(${w.word})`,'ig'),'<strong>$1</strong>'):`把 ${w.word} 放进你今天的一句话里。`;
+$('#exampleCn').textContent=examples[0]?.translation||'';
+$('#wordKnowledge').innerHTML=`<div class="detail-grid"><section class="detail-section"><h3>高频考点</h3><p class="exam-point">${keyPoint(w)}</p></section><section class="detail-section"><h3>词组搭配</h3>${phrases.length?phrases.slice(0,4).map(p=>`<p><strong>${p.phrase}</strong>　${p.translation}</p>`).join(''):'<p>暂无搭配数据</p>'}</section><section class="detail-section"><h3>词根提示</h3><p>${rootHint(w.word)}</p></section><section class="detail-section"><h3>近义关联</h3><p>${near.length?near.map(x=>`<span class="chip">${x.word}</span>`).join(' '):'暂无可靠近义关联'}</p></section><section class="detail-section"><h3>更多例句</h3>${examples.slice(1,3).map(x=>`<p class="example">${x.sentence}</p><p class="example-cn">${x.translation||''}</p>`).join('')||'<p>暂无更多例句</p>'}</section></div>`}
 function renderPool(){pool=getPool();
 $('#poolList').innerHTML=pool.items.map(w=>{const x=findWord(w);
 return`<div class="row"><div><strong>${w}</strong><small>${x?.translation||''}</small></div><div class="row-actions"><button class="iconbtn" data-lock="${w}" title="锁定">${pool.locked?.includes(w)?'锁':'固'}</button><button class="iconbtn" data-replace="${w}" title="替换">换</button><button class="iconbtn" data-remove="${w}" title="删除">删</button></div></div>`}).join('')||'<div class="empty">学习池为空</div>'}

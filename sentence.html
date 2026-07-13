@@ -1,1 +1,56 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>拾词 · 长难句</title><link rel="stylesheet" href="styles.css"></head><body><main class="shell"><header class="topbar"><div class="brand">拾词 <small>长难句拆分</small></div><nav class="nav"><a href="index.html">学习</a><a href="vocabulary.html">词库</a><a aria-current="page" href="sentence.html">长难句</a><a href="reading.html">阅读</a></nav></header><section class="panel"><h1>把长句，拆成能读懂的小段。</h1><textarea class="field" id="input" rows="6" style="width:100%" placeholder="粘贴英文长句"></textarea><div class="toolbar" style="margin-top:12px"><button class="btn" id="analyze">开始拆分</button><button class="btn secondary" id="sample">填入示例</button></div></section><section class="panel" style="margin-top:16px"><div class="notice">绿色高考 · 蓝色考研 · 紫色共有 · 红色未收录。点击单词查看详情。</div><div id="segments" class="passage"><div class="empty">输入句子后开始分析</div></div></section></main><div class="modal hidden" id="modal"><div class="modal-card"><button class="iconbtn" style="float:right" id="close">×</button><h2 id="mword"></h2><p id="mmeaning"></p><div class="toolbar"><button class="btn secondary" data-voice="en-US">美音</button><button class="btn secondary" data-voice="en-GB">英音</button><button class="btn" id="add">加入今日学习池</button></div></div></div><script type="module" src="sentence.js"></script></body></html>
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>拾词 · 长难句</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="memory.css">
+<script src="theme.js" defer></script>
+</head>
+<body>
+<main class="shell">
+<header class="topbar">
+<div class="brand">拾词 <small>长难句拆分</small>
+</div>
+<nav class="nav">
+<a href="index.html">学习</a>
+<a href="vocabulary.html">词库</a>
+<a aria-current="page" href="sentence.html">长难句</a>
+<a href="reading.html">阅读</a>
+</nav>
+</header>
+<section class="panel">
+<h1>把长句，拆成能读懂的小段。</h1>
+<textarea class="field" id="input" rows="6" style="width:100%" placeholder="粘贴英文长句">
+</textarea>
+<div class="toolbar" style="margin-top:12px">
+<button class="btn" id="analyze">开始拆分</button>
+<button class="btn secondary" id="sample">填入示例</button>
+</div>
+</section>
+<section class="panel" style="margin-top:16px">
+<div class="notice">绿色高考 · 蓝色考研 · 紫色共有 · 红色未收录。点击单词查看详情。</div>
+<div id="segments" class="passage">
+<div class="empty">输入句子后开始分析</div>
+</div>
+</section>
+</main>
+<div class="modal hidden" id="modal">
+<div class="modal-card">
+<button class="iconbtn" style="float:right" id="close">×</button>
+<h2 id="mword">
+</h2>
+<p id="mmeaning">
+</p>
+<div class="toolbar">
+<button class="btn secondary" data-voice="en-US">美音</button>
+<button class="btn secondary" data-voice="en-GB">英音</button>
+<button class="btn" id="add">加入今日学习池</button>
+</div>
+</div>
+</div>
+<script type="module" src="sentence.js">
+</script>
+</body>
+</html>
