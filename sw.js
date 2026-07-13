@@ -1,4 +1,4 @@
-const CACHE='shici-v5.2.0';
+const CACHE='shici-v5.2.1';
 const ASSETS=['./','./index.html','./styles.css','./memory.css','./enhancements.css','./theme.js','./knowledge.js','./app.js','./vocabulary-manager.js','./learning-pool.js','./review-manager.js','./stats.js','./vocabulary.html','./sentence.html','./sentence.js','./reading.html','./reading.js','./lookup.html','./lookup.js','./exam.html','./exam.js','./manifest.webmanifest','./icons/icon.svg','./data/gaokao.json','./data/kaoyan.json','./data/SOURCE.md'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(async c=>{for(const u of ASSETS){try{const r=await fetch(u,{cache:'reload'});
 if(r.ok)await c.put(u,r)}catch{}}}).then(()=>self.skipWaiting())));
