@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="memory.css">
 <link rel="stylesheet" href="enhancements.css">
+<link rel="stylesheet" href="choices.css">
 <script src="theme.js" defer></script>
 <script type="module" src="app.js">
 </script>
@@ -61,8 +62,10 @@
 <p class="phonetic" id="source">
 </p>
 <div class="word-line"><h2 class="word" id="word">加载中</h2><span class="memory-badge" id="memoryBadge">连续正确 0/3</span></div>
-<div class="recall-cue" id="recallCue">先别点释义，盯住单词回忆 3 秒</div>
+<div class="recall-cue" id="recallCue">先回忆，再选择正确的中文释义</div>
 <p class="phonetic" id="phonetic"></p>
+<div class="choice-grid" id="choices" aria-label="中文释义选项"></div>
+<div class="choice-feedback hidden" id="choiceFeedback" aria-live="polite"></div>
 <div class="memory-pack hidden" id="memoryPack">
   <p class="meaning" id="meaning"></p>
   <p class="syllable" id="syllable"></p>
@@ -73,15 +76,10 @@
 <div class="toolbar" style="justify-content:center;margin-top:22px">
 <button class="btn secondary" data-voice="en-US">美音</button>
 <button class="btn secondary" data-voice="en-GB">英音</button>
-<button class="btn" id="reveal">显示释义</button>
+<button class="btn secondary" id="reveal">不会，显示答案</button>
+<button class="btn hidden" id="nextWord">下一词</button>
 </div>
 </div>
-</div>
-<div class="rating hidden" id="rating">
-<button class="btn danger" data-rate="1">完全不会</button>
-<button class="btn secondary" data-rate="2">有印象</button>
-<button class="btn secondary" data-rate="3">勉强认识</button>
-<button class="btn" data-rate="4">已掌握</button>
 </div>
 <div class="notice hidden" id="done">今天的新词已完成。可以进入到期复习，或编辑学习池。</div>
 <div class="notice hidden" id="reviewNotice"></div>

@@ -1,0 +1,49 @@
+.choice-grid {
+  width: min(100%, 720px);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 20px auto 4px;
+  text-align: left;
+}
+
+.choice-option {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  align-items: start;
+  gap: 10px;
+  width: 100%;
+  min-height: 64px;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 680;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.choice-option:not(:disabled):active { transform: translateY(1px); }
+.choice-option:not(:disabled):hover { border-color: var(--accent); }
+.choice-option:focus-visible { outline: 3px solid rgba(226,119,79,.3); outline-offset: 2px; }
+.choice-option:disabled { cursor: default; opacity: 1; }
+.choice-key { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: var(--soft,#eef0e8); font-weight: 850; }
+.choice-option.correct { border-color: #4d7e5c; background: #e7f1e9; color: #244f31; }
+.choice-option.correct .choice-key { background: #4d7e5c; color: white; }
+.choice-option.wrong { border-color: #b45a50; background: #f7e3df; color: #873c34; }
+.choice-option.wrong .choice-key { background: #b45a50; color: white; }
+.choice-feedback { width: min(100%,720px); margin: 12px auto 0; padding: 12px 14px; border-radius: 12px; font-weight: 750; text-align: left; }
+.choice-feedback.correct { background: #e7f1e9; color: #315b42; }
+.choice-feedback.wrong { background: #f7e3df; color: #8b4038; }
+
+[data-theme="dark"] .choice-option { background: #2b3630; color: #edf3ee; border-color: #4a584f; }
+[data-theme="dark"] .choice-option.correct { background: #294332; color: #d9f0df; border-color: #6aa87b; }
+[data-theme="dark"] .choice-option.wrong { background: #4a2c29; color: #ffd9d2; border-color: #c87970; }
+[data-theme="dark"] .choice-feedback.correct { background: #294332; color: #d9f0df; }
+[data-theme="dark"] .choice-feedback.wrong { background: #4a2c29; color: #ffd9d2; }
+
+@media (max-width: 700px) {
+  .choice-grid { grid-template-columns: 1fr; }
+  .choice-option { min-height: 60px; }
+}

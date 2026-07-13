@@ -5,15 +5,23 @@ import{stats}from'./stats.js';
 import{rootHint,keyPoint,nearWords}from'./knowledge.js';
 import{startAutoSync}from'./cloud-sync.js';
 
-let pool,index=0,queue=[],reviewMode=false;
+let pool,index=0,queue=[],reviewMode=false,currentOptions=[],answered=false;
 const $=s=>document.querySelector(s),label={gaokao:'高考词',kaoyan:'考研词',both:'高考与考研共有'};
+
+function shuffle(a){a=[...a];for(let i=a.length-1;i;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function makeOptions(word){const picked=[],seen=new Set([word.translation]);const all=allWords();let attempts=0;while(picked.length<3&&attempts<all.length*3){attempts++;const item=all[Math.floor(Math.random()*all.length)];if(!item||item.word===word.word||!item.translation||seen.has(item.translation))continue;seen.add(item.translation);picked.push(item)}return shuffle([word,...picked])}
+function optionText(value){const text=String(value||'暂无释义').replace(/\s+/g,' ').trim();return text.length>82?`${text.slice(0,82)}…`:text}
+function renderChoices(word){currentOptions=makeOptions(word);const wrap=$('#choices');wrap.innerHTML='';currentOptions.forEach((item,i)=>{const button=document.createElement('button');button.type='button';button.className='choice-option';button.dataset.choice=String(i);const key=document.createElement('span');key.className='choice-key';key.textContent=String.fromCharCode(65+i);const text=document.createElement('span');text.textContent=optionText(item.translation);button.append(key,text);wrap.append(button)})}
 
 function renderStats(){const x=stats();
 $('#stats').innerHTML=`<div class="stat"><strong>${x.gaokao.rate}%</strong><span>高考掌握率 · ${x.gaokao.mastered}/${x.gaokao.total}</span></div><div class="stat"><strong>${x.kaoyan.rate}%</strong><span>考研掌握率 · ${x.kaoyan.mastered}/${x.kaoyan.total}</span></div><div class="stat"><strong>${x.due}</strong><span>到期复习</span></div><div class="stat"><strong>${x.streak} 天</strong><span>连续学习</span></div>`}
 function chunks(word){const parts=word.match(/[^aeiouy]*[aeiouy]+(?:[^aeiouy](?=[^aeiouy]*[aeiouy])|[^aeiouy]*$)/gi);return parts?.length>1?parts.join(' · '):word}function current(){return findWord(queue[index])}function render(){const w=current();
+answered=false;
 $('#memoryPack').classList.add('hidden');
-$('#rating').classList.add('hidden');
 $('#recallCue').classList.remove('hidden');
+$('#choiceFeedback').classList.add('hidden');
+$('#nextWord').classList.add('hidden');
+$('#reveal').classList.remove('hidden');
 if(!w){$('#card').classList.add('hidden');
 $('#done').classList.remove('hidden');
 return}$('#card').classList.remove('hidden');
@@ -25,9 +33,10 @@ const rec=getState().records[w.word]||{};
 $('#memoryBadge').textContent=rec.tailStage?'长时记忆尾期':`连续正确 ${rec.correctStreak||0}/3`;
 $('#memoryBadge').classList.toggle('tail',!!rec.tailStage);
 $('#phonetic').textContent='';
+renderChoices(w);
 $('#syllable').textContent=`拆着记：${chunks(w.word)}`;
-const examples=w.sentences||[],phrases=w.phrases||[],near=nearWords(w,allWords());
-$('#example').innerHTML=examples[0]?.sentence?examples[0].sentence.replace(new RegExp(`(${w.word})`,'ig'),'<strong>$1</strong>'):`把 ${w.word} 放进你今天的一句话里。`;
+const examples=Array.isArray(w.sentences)?w.sentences:(w.sentences?.sentence?[w.sentences]:[]),phrases=Array.isArray(w.phrases)?w.phrases:(w.phrases?.phrase?[w.phrases]:[]),near=nearWords(w,allWords());
+$('#example').innerHTML=examples[0]?.sentence?examples[0].sentence.replace(new RegExp(`(${w.word})`,'ig'),'<strong>$1</strong>'):'暂无可靠例句。';
 $('#exampleCn').textContent=examples[0]?.translation||'';
 $('#wordKnowledge').innerHTML=`<div class="detail-grid"><section class="detail-section"><h3>高频考点</h3><p class="exam-point">${keyPoint(w)}</p></section><section class="detail-section"><h3>词组搭配</h3>${phrases.length?phrases.slice(0,4).map(p=>`<p><strong>${p.phrase}</strong>　${p.translation}</p>`).join(''):'<p>暂无搭配数据</p>'}</section><section class="detail-section"><h3>词根提示</h3><p>${rootHint(w.word)}</p></section><section class="detail-section"><h3>近义关联</h3><p>${near.length?near.map(x=>`<span class="chip">${x.word}</span>`).join(' '):'暂无可靠近义关联'}</p></section><section class="detail-section"><h3>更多例句</h3>${examples.slice(1,3).map(x=>`<p class="example">${x.sentence}</p><p class="example-cn">${x.translation||''}</p>`).join('')||'<p>暂无更多例句</p>'}</section></div>`}
 function renderPool(){pool=getPool();
@@ -40,6 +49,7 @@ u.lang=lang;
 u.rate=.86;
 speechSynthesis.cancel();
 speechSynthesis.speak(u)}
+function finishChoice(correct,selectedIndex=-1){if(answered)return;const w=current();if(!w)return;answered=true;const record=rate(w.word,correct?3:1,w.source);if(!correct)queue.splice(Math.min(index+4,queue.length),0,w.word);if(!reviewMode){pool.completed=[...new Set([...pool.completed,w.word])];localStorage.setItem('ky5_pool',JSON.stringify(pool))}const buttons=[...document.querySelectorAll('.choice-option')];buttons.forEach((button,i)=>{button.disabled=true;if(currentOptions[i]?.word===w.word)button.classList.add('correct');else if(i===selectedIndex)button.classList.add('wrong')});$('#phonetic').textContent=`美 /${w.us||'暂无'}/　英 /${w.uk||'暂无'}/`;$('#memoryPack').classList.remove('hidden');$('#recallCue').classList.add('hidden');$('#reveal').classList.add('hidden');$('#nextWord').classList.remove('hidden');const feedback=$('#choiceFeedback');feedback.textContent=correct?(record.correctStreak>=3?'回答正确，已连续正确 3 次，标记为已掌握。':`回答正确，连续正确 ${record.correctStreak}/3。`):'本次已按错误记录，连续正确已清零，并加入本轮回炉。';feedback.className=`choice-feedback ${correct?'correct':'wrong'}`;$('#memoryBadge').textContent=record.tailStage?'已连续正确 3 次':`连续正确 ${record.correctStreak||0}/3`;$('#memoryBadge').classList.toggle('tail',!!record.tailStage);renderStats()}
 async function init(){await loadVocabulary();
 const mig=migrateLegacy();
 const s=getSettings();
@@ -53,31 +63,20 @@ if(!mig.done)$('#done').innerHTML=`旧数据迁移失败。<button class="btn" i
 if('serviceWorker'in navigator){const reg=await navigator.serviceWorker.register('./sw.js');
 reg.addEventListener('updatefound',()=>{const worker=reg.installing;
 worker?.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller){document.body.insertAdjacentHTML('beforeend','<div class="update">发现新版本 <button class="btn accent" onclick="location.reload()">点击更新</button></div>')}})})}}
-$('#reveal').onclick=()=>{const w=current();
-$('#phonetic').textContent=`美 /${w?.us||'暂无'}/　英 /${w?.uk||'暂无'}/`;
-$('#memoryPack').classList.remove('hidden');
-$('#rating').classList.remove('hidden');
-$('#recallCue').classList.add('hidden')};
+$('#reveal').onclick=()=>finishChoice(false);
+$('#nextWord').onclick=()=>{index++;render()};
 document.addEventListener('click',e=>{const v=e.target.dataset.voice;
 if(v)speak(v);
-const n=Number(e.target.dataset.rate);
-if(n){const w=current();
-rate(w.word,n,w.source);
-if(n===1)queue.splice(Math.min(index+4,queue.length),0,w.word);
-if(!reviewMode){pool.completed=[...new Set([...pool.completed,w.word])];
-localStorage.setItem('ky5_pool',JSON.stringify(pool))}index++;
-renderStats();
-render()}if(e.target.dataset.remove){remove(e.target.dataset.remove);
+const choice=e.target.closest?.('[data-choice]');if(choice)finishChoice(currentOptions[Number(choice.dataset.choice)]?.word===current()?.word,Number(choice.dataset.choice));
+if(e.target.dataset.remove){remove(e.target.dataset.remove);
 renderPool()}if(e.target.dataset.replace){replace(e.target.dataset.replace);
 renderPool()}if(e.target.dataset.lock){toggleLock(e.target.dataset.lock);
 renderPool()}});
 $('#mode').onchange=$('#daily').onchange=()=>{saveSettings({mode:$('#mode').value,daily:Number($('#daily').value)});
-localStorage.removeItem('ky5_pool');
 pool=getPool();
-queue=pool.items;
-index=0;
-renderStats();
-render()};
+$('#reviewNotice').textContent='设置已保存，将从下一个学习日生效。今日学习池保持固定，如需改动请使用“编辑学习池”。';
+$('#reviewNotice').classList.remove('hidden');
+renderStats()};
 $('#poolBtn').onclick=()=>{renderPool();
 $('#poolModal').classList.remove('hidden')};
 $('#closePool').onclick=()=>{$('#poolModal').classList.add('hidden');
