@@ -10,9 +10,9 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="memory.css">
 <link rel="stylesheet" href="enhancements.css">
-<link rel="stylesheet" href="choices.css?v=5.6.3">
+<link rel="stylesheet" href="choices.css?v=5.6.4">
 <script src="theme.js" defer></script>
-<script type="module" src="app.js?v=5.6.3">
+<script type="module" src="app.js?v=5.6.4">
 </script>
 </head>
 <body>
@@ -56,6 +56,7 @@
 </select>
 <button class="btn secondary" id="poolBtn">编辑学习池</button>
 <button class="btn secondary" id="reviewBtn">到期复习</button>
+<button class="btn secondary" id="quizBtn">单词小测</button>
 <a class="sync-pill" id="syncStatus" href="sync.html">同步状态读取中</a>
 </div>
 <div class="today-task" id="todayTask" aria-live="polite">
@@ -108,6 +109,18 @@
 <input class="field" id="addWord" placeholder="输入词库中的单词">
 <button class="btn" id="addWordBtn">加入</button>
 </div>
+</div>
+</div>
+<div class="modal hidden" id="quizModal">
+<div class="modal-card">
+<div class="toolbar">
+<div style="flex:1">
+<h2 style="margin:0">单词小测</h2>
+<small id="quizMeta">从今日学习池抽题</small>
+</div>
+<button class="iconbtn" id="closeQuiz" aria-label="关闭">×</button>
+</div>
+<div id="quizBody"></div>
 </div>
 </div>
 </body>

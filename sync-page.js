@@ -1,4 +1,4 @@
-import{getSyncConfig,saveSyncConfig,clearSyncConfig,isConfigured,createSyncId,syncNow,exportSyncFile,importSyncFile,startAutoSync}from'./cloud-sync.js?v=5.6.3';
+import{getSyncConfig,saveSyncConfig,clearSyncConfig,isConfigured,createSyncId,syncNow,exportSyncFile,importSyncFile,startAutoSync}from'./cloud-sync.js?v=5.6.4';
 const $=s=>document.querySelector(s),config=getSyncConfig();
 const fields={endpoint:$('#endpoint'),anonKey:$('#anonKey'),syncId:$('#syncId'),passphrase:$('#passphrase'),autoSync:$('#autoSync')};
 for(const[k,el]of Object.entries(fields)){if(k==='autoSync')el.checked=config.autoSync!==false;else el.value=config[k]||''}
