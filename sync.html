@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="sync.css">
 <script src="theme.js" defer></script>
-<script type="module" src="sync-page.js?v=5.6.1"></script>
+<script type="module" src="sync-page.js?v=5.6.2"></script>
 </head>
 <body>
 <main class="shell sync-shell">
@@ -62,6 +62,7 @@
 <input id="endpoint" type="hidden">
 <input id="anonKey" type="hidden">
 <div class="sync-actions"><button class="btn secondary" type="button" id="newPair">生成安全配对信息</button><button class="btn secondary" type="button" id="copyPair">复制手机配对链接</button></div>
+<label>在已安装的 iPhone App 中配对<div class="inline-field"><input class="field" id="pairLink" placeholder="在这里粘贴电脑配对链接" autocomplete="off"><button class="btn secondary" type="button" id="applyPair">读取</button></div></label>
 <label>同步码<div class="inline-field"><input class="field" id="syncId" placeholder="首次可自动生成" autocomplete="off"><button class="btn secondary" type="button" id="newCode">生成</button><button class="btn secondary" type="button" id="copyCode">复制</button></div></label>
 <label>同步密码<input class="field" id="passphrase" type="password" minlength="8" placeholder="至少 8 位，两台设备保持一致" autocomplete="new-password"></label>
 <label class="check"><input id="autoSync" type="checkbox" checked> 打开应用及联网恢复时自动同步</label>
@@ -75,7 +76,7 @@
 <ol>
 <li>电脑点击“生成安全配对信息”，再点击“保存并同步”。</li>
 <li>点击“复制手机配对链接”，通过微信、备忘录或隔空投送发到 iPhone。</li>
-<li>iPhone 用 Safari 打开链接，点击“保存并同步”。以后打开应用或恢复联网时会自动合并。</li>
+<li>iPhone 可用 Safari 打开链接；若已安装到主屏幕，也可在 App 的同步页粘贴链接并点“读取”。最后点击“保存并同步”。</li>
 </ol>
 <p class="fineprint">同步使用随机同步码定位数据，并用你的密码执行 AES-GCM 端到端加密。请妥善保存同步码和密码，丢失后无法解密云端内容。</p>
 </details>
