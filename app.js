@@ -1,8 +1,92 @@
-import{loadVocabulary,findWord,getSettings,saveSettings,getState,migrateLegacy,exportAll}from'./vocabulary-manager.js';import{getPool,remove,replace,toggleLock,add,fill}from'./learning-pool.js';import{rate,dueWords}from'./review-manager.js';import{stats}from'./stats.js';
-let pool,index=0,queue=[],reviewMode=false;const $=s=>document.querySelector(s),label={gaokao:'高考词',kaoyan:'考研词',both:'高考与考研共有'};
-function renderStats(){const x=stats();$('#stats').innerHTML=`<div class="stat"><strong>${x.gaokao.rate}%</strong><span>高考掌握率 · ${x.gaokao.mastered}/${x.gaokao.total}</span></div><div class="stat"><strong>${x.kaoyan.rate}%</strong><span>考研掌握率 · ${x.kaoyan.mastered}/${x.kaoyan.total}</span></div><div class="stat"><strong>${x.due}</strong><span>到期复习</span></div><div class="stat"><strong>${x.streak} 天</strong><span>连续学习</span></div>`}
-function current(){return findWord(queue[index])}function render(){const w=current();$('#meaning').classList.add('hidden');$('#rating').classList.add('hidden');if(!w){$('#card').classList.add('hidden');$('#done').classList.remove('hidden');return}$('#card').classList.remove('hidden');$('#done').classList.add('hidden');$('#word').textContent=w.word;$('#meaning').textContent=w.translation||'暂无释义';$('#source').textContent=label[w.source]||'自定义词';$('#phonetic').textContent=w.phonetic||''}
-function renderPool(){pool=getPool();$('#poolList').innerHTML=pool.items.map(w=>{const x=findWord(w);return`<div class="row"><div><strong>${w}</strong><small>${x?.translation||''}</small></div><div class="row-actions"><button class="iconbtn" data-lock="${w}" title="锁定">${pool.locked?.includes(w)?'锁':'固'}</button><button class="iconbtn" data-replace="${w}" title="替换">换</button><button class="iconbtn" data-remove="${w}" title="删除">删</button></div></div>`}).join('')||'<div class="empty">学习池为空</div>'}
-function speak(lang){const w=current();if(!w)return;const u=new SpeechSynthesisUtterance(w.word);u.lang=lang;u.rate=.86;speechSynthesis.cancel();speechSynthesis.speak(u)}
-async function init(){await loadVocabulary();const mig=migrateLegacy();const s=getSettings();$('#mode').value=s.mode;$('#daily').value=String(s.daily);pool=getPool();queue=pool.items.filter(x=>!pool.completed.includes(x));renderStats();render();if(!mig.done)$('#done').innerHTML=`旧数据迁移失败。<button class="btn" id="backupOld">导出旧数据</button>`;if('serviceWorker'in navigator){const reg=await navigator.serviceWorker.register('./sw.js');reg.addEventListener('updatefound',()=>{const worker=reg.installing;worker?.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller){document.body.insertAdjacentHTML('beforeend','<div class="update">发现新版本 <button class="btn accent" onclick="location.reload()">点击更新</button></div>')}})})}}
-$('#reveal').onclick=()=>{$('#meaning').classList.remove('hidden');$('#rating').classList.remove('hidden')};document.addEventListener('click',e=>{const v=e.target.dataset.voice;if(v)speak(v);const n=Number(e.target.dataset.rate);if(n){const w=current();rate(w.word,n,w.source);if(!reviewMode){pool.completed=[...new Set([...pool.completed,w.word])];localStorage.setItem('ky5_pool',JSON.stringify(pool))}index++;renderStats();render()}if(e.target.dataset.remove){remove(e.target.dataset.remove);renderPool()}if(e.target.dataset.replace){replace(e.target.dataset.replace);renderPool()}if(e.target.dataset.lock){toggleLock(e.target.dataset.lock);renderPool()}});$('#mode').onchange=$('#daily').onchange=()=>{saveSettings({mode:$('#mode').value,daily:Number($('#daily').value)});localStorage.removeItem('ky5_pool');pool=getPool();queue=pool.items;index=0;renderStats();render()};$('#poolBtn').onclick=()=>{renderPool();$('#poolModal').classList.remove('hidden')};$('#closePool').onclick=()=>{$('#poolModal').classList.add('hidden');pool=getPool();queue=pool.items.filter(x=>!pool.completed.includes(x));index=0;render()};$('#fillPool').onclick=()=>{fill();renderPool()};$('#addWordBtn').onclick=()=>{add($('#addWord').value.trim());$('#addWord').value='';renderPool()};$('#reviewBtn').onclick=()=>{queue=dueWords();reviewMode=true;index=0;render()};init();
+import{loadVocabulary,findWord,getSettings,saveSettings,getState,migrateLegacy,exportAll}from'./vocabulary-manager.js';
+import{getPool,remove,replace,toggleLock,add,fill}from'./learning-pool.js';
+import{rate,dueWords,wrongWords}from'./review-manager.js';
+import{stats}from'./stats.js';
+
+let pool,index=0,queue=[],reviewMode=false;
+const $=s=>document.querySelector(s),label={gaokao:'高考词',kaoyan:'考研词',both:'高考与考研共有'};
+
+function renderStats(){const x=stats();
+$('#stats').innerHTML=`<div class="stat"><strong>${x.gaokao.rate}%</strong><span>高考掌握率 · ${x.gaokao.mastered}/${x.gaokao.total}</span></div><div class="stat"><strong>${x.kaoyan.rate}%</strong><span>考研掌握率 · ${x.kaoyan.mastered}/${x.kaoyan.total}</span></div><div class="stat"><strong>${x.due}</strong><span>到期复习</span></div><div class="stat"><strong>${x.streak} 天</strong><span>连续学习</span></div>`}
+function chunks(word){const parts=word.match(/[^aeiouy]*[aeiouy]+(?:[^aeiouy](?=[^aeiouy]*[aeiouy])|[^aeiouy]*$)/gi);return parts?.length>1?parts.join(' · '):word}function current(){return findWord(queue[index])}function render(){const w=current();
+$('#memoryPack').classList.add('hidden');
+$('#rating').classList.add('hidden');
+$('#recallCue').classList.remove('hidden');
+if(!w){$('#card').classList.add('hidden');
+$('#done').classList.remove('hidden');
+return}$('#card').classList.remove('hidden');
+$('#done').classList.add('hidden');
+$('#word').textContent=w.word;
+$('#meaning').textContent=w.translation||'暂无释义';
+$('#source').textContent=label[w.source]||'自定义词';
+$('#phonetic').textContent='';
+$('#syllable').textContent=`拆着记：${chunks(w.word)}`;
+$('#example').innerHTML=w.sentence?w.sentence.replace(new RegExp(`(${w.word})`,'ig'),'<strong>$1</strong>'):`把 ${w.word} 放进你今天的一句话里。`;
+$('#exampleCn').textContent=w.sentenceCn||''}
+function renderPool(){pool=getPool();
+$('#poolList').innerHTML=pool.items.map(w=>{const x=findWord(w);
+return`<div class="row"><div><strong>${w}</strong><small>${x?.translation||''}</small></div><div class="row-actions"><button class="iconbtn" data-lock="${w}" title="锁定">${pool.locked?.includes(w)?'锁':'固'}</button><button class="iconbtn" data-replace="${w}" title="替换">换</button><button class="iconbtn" data-remove="${w}" title="删除">删</button></div></div>`}).join('')||'<div class="empty">学习池为空</div>'}
+function speak(lang){const w=current();
+if(!w)return;
+const u=new SpeechSynthesisUtterance(w.word);
+u.lang=lang;
+u.rate=.86;
+speechSynthesis.cancel();
+speechSynthesis.speak(u)}
+async function init(){await loadVocabulary();
+const mig=migrateLegacy();
+const s=getSettings();
+$('#mode').value=s.mode;
+$('#daily').value=String(s.daily);
+pool=getPool();
+queue=pool.items.filter(x=>!pool.completed.includes(x));
+renderStats();
+render();
+if(!mig.done)$('#done').innerHTML=`旧数据迁移失败。<button class="btn" id="backupOld">导出旧数据</button>`;
+if('serviceWorker'in navigator){const reg=await navigator.serviceWorker.register('./sw.js');
+reg.addEventListener('updatefound',()=>{const worker=reg.installing;
+worker?.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller){document.body.insertAdjacentHTML('beforeend','<div class="update">发现新版本 <button class="btn accent" onclick="location.reload()">点击更新</button></div>')}})})}}
+$('#reveal').onclick=()=>{const w=current();
+$('#phonetic').textContent=`美 /${w?.us||'暂无'}/　英 /${w?.uk||'暂无'}/`;
+$('#memoryPack').classList.remove('hidden');
+$('#rating').classList.remove('hidden');
+$('#recallCue').classList.add('hidden')};
+document.addEventListener('click',e=>{const v=e.target.dataset.voice;
+if(v)speak(v);
+const n=Number(e.target.dataset.rate);
+if(n){const w=current();
+rate(w.word,n,w.source);
+if(n===1)queue.splice(Math.min(index+4,queue.length),0,w.word);
+if(!reviewMode){pool.completed=[...new Set([...pool.completed,w.word])];
+localStorage.setItem('ky5_pool',JSON.stringify(pool))}index++;
+renderStats();
+render()}if(e.target.dataset.remove){remove(e.target.dataset.remove);
+renderPool()}if(e.target.dataset.replace){replace(e.target.dataset.replace);
+renderPool()}if(e.target.dataset.lock){toggleLock(e.target.dataset.lock);
+renderPool()}});
+$('#mode').onchange=$('#daily').onchange=()=>{saveSettings({mode:$('#mode').value,daily:Number($('#daily').value)});
+localStorage.removeItem('ky5_pool');
+pool=getPool();
+queue=pool.items;
+index=0;
+renderStats();
+render()};
+$('#poolBtn').onclick=()=>{renderPool();
+$('#poolModal').classList.remove('hidden')};
+$('#closePool').onclick=()=>{$('#poolModal').classList.add('hidden');
+pool=getPool();
+queue=pool.items.filter(x=>!pool.completed.includes(x));
+index=0;
+render()};
+$('#fillPool').onclick=()=>{fill();
+renderPool()};
+$('#addWordBtn').onclick=()=>{add($('#addWord').value.trim());
+$('#addWord').value='';
+renderPool()};
+$('#reviewBtn').onclick=()=>{queue=dueWords();
+const notice=$('#reviewNotice');
+if(!queue.length){queue=wrongWords();notice.textContent=queue.length?'暂无到期词，已为你打开错词回炉。':'暂无到期复习。先完成几个新词，完全不会的词会在本轮 3 个词后再次出现。';notice.classList.remove('hidden')}else{notice.textContent=`本次有 ${queue.length} 个到期词。`;notice.classList.remove('hidden')}
+reviewMode=true;
+index=0;
+render()};
+init();

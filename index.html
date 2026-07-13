@@ -1,1 +1,101 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#26382d"><title>拾词 · 今日学习</title><link rel="manifest" href="manifest.webmanifest"><link rel="stylesheet" href="styles.css"><script type="module" src="app.js"></script></head><body><main class="shell"><header class="topbar"><div class="brand">拾词 <small>从高考到考研</small></div><nav class="nav"><a aria-current="page" href="index.html">学习</a><a href="vocabulary.html">词库</a><a href="sentence.html">长难句</a><a href="reading.html">阅读</a></nav></header><section class="hero"><div class="panel"><span class="chip">今日记忆</span><h1>每天一点，<br><span class="accent">慢慢记牢。</span></h1><p>随机抽取、当天固定、到期复习。不会的词会更快回来，已经掌握的词不会丢失历史。</p></div><div class="panel"><div class="statgrid" id="stats"></div></div></section><section class="panel"><div class="toolbar"><select id="mode" class="field"><option value="smart">智能衔接</option><option value="gaokao">高考基础</option><option value="kaoyan">考研模式</option></select><select id="daily" class="field"><option>10</option><option selected>20</option><option>30</option><option>50</option></select><button class="btn secondary" id="poolBtn">编辑学习池</button><button class="btn secondary" id="reviewBtn">到期复习</button></div><div class="card" id="card"><div><p class="phonetic" id="source"></p><h2 class="word" id="word">加载中</h2><p class="phonetic" id="phonetic"></p><p class="meaning hidden" id="meaning"></p><div class="toolbar" style="justify-content:center;margin-top:22px"><button class="btn secondary" data-voice="en-US">美音</button><button class="btn secondary" data-voice="en-GB">英音</button><button class="btn" id="reveal">显示释义</button></div></div></div><div class="rating hidden" id="rating"><button class="btn danger" data-rate="1">完全不会</button><button class="btn secondary" data-rate="2">有印象</button><button class="btn secondary" data-rate="3">勉强认识</button><button class="btn" data-rate="4">已掌握</button></div><div class="notice hidden" id="done">今天的新词已完成。可以进入到期复习，或编辑学习池。</div></section></main><div class="modal hidden" id="poolModal"><div class="modal-card"><div class="toolbar"><h2 style="margin:0;flex:1">今日学习池</h2><button class="btn secondary" id="fillPool">自动补满</button><button class="iconbtn" id="closePool" aria-label="关闭">×</button></div><div class="list" id="poolList"></div><div class="toolbar" style="margin-top:16px"><input class="field" id="addWord" placeholder="输入词库中的单词"><button class="btn" id="addWordBtn">加入</button></div></div></div></body></html>
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#26382d">
+<title>拾词 · 今日学习</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="memory.css">
+<script type="module" src="app.js">
+</script>
+</head>
+<body>
+<main class="shell">
+<header class="topbar">
+<div class="brand">拾词 <small>从高考到考研</small>
+</div>
+<nav class="nav">
+<a aria-current="page" href="index.html">学习</a>
+<a href="vocabulary.html">词库</a>
+<a href="sentence.html">长难句</a>
+<a href="reading.html">阅读</a>
+</nav>
+</header>
+<section class="hero">
+<div class="panel">
+<span class="chip">今日记忆</span>
+<h1>每天一点，<br>
+<span class="accent">慢慢记牢。</span>
+</h1>
+<p>随机抽取、当天固定、到期复习。不会的词会更快回来，已经掌握的词不会丢失历史。</p>
+</div>
+<div class="panel">
+<div class="statgrid" id="stats">
+</div>
+</div>
+</section>
+<section class="panel">
+<div class="toolbar">
+<select id="mode" class="field">
+<option value="smart">智能衔接</option>
+<option value="gaokao">高考基础</option>
+<option value="kaoyan">考研模式</option>
+</select>
+<select id="daily" class="field">
+<option>10</option>
+<option selected>20</option>
+<option>30</option>
+<option>50</option>
+</select>
+<button class="btn secondary" id="poolBtn">编辑学习池</button>
+<button class="btn secondary" id="reviewBtn">到期复习</button>
+</div>
+<div class="card" id="card">
+<div>
+<p class="phonetic" id="source">
+</p>
+<h2 class="word" id="word">加载中</h2>
+<div class="recall-cue" id="recallCue">先别点释义，盯住单词回忆 3 秒</div>
+<p class="phonetic" id="phonetic"></p>
+<div class="memory-pack hidden" id="memoryPack">
+  <p class="meaning" id="meaning"></p>
+  <p class="syllable" id="syllable"></p>
+  <p class="example" id="example"></p>
+  <p class="example-cn" id="exampleCn"></p>
+</div>
+<div class="toolbar" style="justify-content:center;margin-top:22px">
+<button class="btn secondary" data-voice="en-US">美音</button>
+<button class="btn secondary" data-voice="en-GB">英音</button>
+<button class="btn" id="reveal">显示释义</button>
+</div>
+</div>
+</div>
+<div class="rating hidden" id="rating">
+<button class="btn danger" data-rate="1">完全不会</button>
+<button class="btn secondary" data-rate="2">有印象</button>
+<button class="btn secondary" data-rate="3">勉强认识</button>
+<button class="btn" data-rate="4">已掌握</button>
+</div>
+<div class="notice hidden" id="done">今天的新词已完成。可以进入到期复习，或编辑学习池。</div>
+<div class="notice hidden" id="reviewNotice"></div>
+</section>
+</main>
+<div class="modal hidden" id="poolModal">
+<div class="modal-card">
+<div class="toolbar">
+<h2 style="margin:0;flex:1">今日学习池</h2>
+<button class="btn secondary" id="fillPool">自动补满</button>
+<button class="iconbtn" id="closePool" aria-label="关闭">×</button>
+</div>
+<div class="list" id="poolList">
+</div>
+<div class="toolbar" style="margin-top:16px">
+<input class="field" id="addWord" placeholder="输入词库中的单词">
+<button class="btn" id="addWordBtn">加入</button>
+</div>
+</div>
+</div>
+</body>
+</html>
