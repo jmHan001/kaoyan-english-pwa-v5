@@ -10,9 +10,9 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="memory.css">
 <link rel="stylesheet" href="enhancements.css">
-<link rel="stylesheet" href="choices.css">
+<link rel="stylesheet" href="choices.css?v=5.6.3">
 <script src="theme.js" defer></script>
-<script type="module" src="app.js?v=5.6.2">
+<script type="module" src="app.js?v=5.6.3">
 </script>
 </head>
 <body>
@@ -56,6 +56,7 @@
 </select>
 <button class="btn secondary" id="poolBtn">编辑学习池</button>
 <button class="btn secondary" id="reviewBtn">到期复习</button>
+<a class="sync-pill" id="syncStatus" href="sync.html">同步状态读取中</a>
 </div>
 <div class="today-task" id="todayTask" aria-live="polite">
 <div class="today-task-copy">
@@ -91,6 +92,7 @@
 </div>
 <div class="notice hidden" id="done">今天的新词已完成。可以进入到期复习，或编辑学习池。</div>
 <div class="notice hidden" id="reviewNotice"></div>
+<div class="after-task hidden" id="afterTask" aria-live="polite"></div>
 </section>
 </main>
 <div class="modal hidden" id="poolModal">
