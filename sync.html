@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#26382d">
+<title>拾词 · 数据同步</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="sync.css">
+<script src="theme.js" defer></script>
+<script type="module" src="sync-page.js"></script>
+</head>
+<body>
+<main class="shell sync-shell">
+<header class="topbar">
+<div class="brand">拾词 <small>跨设备同步</small></div>
+<nav class="nav">
+<a href="index.html">学习</a>
+<a href="vocabulary.html">词库</a>
+<a href="sentence.html">长难句</a>
+<a href="reading.html">阅读</a>
+<a aria-current="page" href="sync.html">同步</a>
+</nav>
+</header>
+
+<section class="sync-intro">
+<div>
+<span class="chip">电脑与手机</span>
+<h1>让学习记录<br><span class="accent">跟着你走。</span></h1>
+</div>
+<p>本地数据继续离线保存。配置一次云同步后，两台设备会在联网时合并学习进度，云端只保存加密内容。</p>
+</section>
+
+<section class="panel sync-status" aria-live="polite">
+<div>
+<span class="status-dot" id="statusDot"></span>
+<strong id="statusTitle">尚未配置云同步</strong>
+<p id="statusText">你也可以先使用下方的同步文件完成一次迁移。</p>
+</div>
+<button class="btn" id="syncNow" disabled>立即同步</button>
+</section>
+
+<div class="sync-grid">
+<section class="panel">
+<p class="section-label">立即可用</p>
+<h2>同步文件</h2>
+<p class="muted">先在电脑导出，再在手机导入。适合第一次把现有记录搬过去，也可作为备份。</p>
+<div class="sync-actions">
+<button class="btn" id="exportFile">导出同步文件</button>
+<label class="btn secondary file-button">导入同步文件<input id="importFile" type="file" accept="application/json,.json"></label>
+</div>
+<p class="fineprint" id="fileResult"></p>
+</section>
+
+<section class="panel">
+<p class="section-label">持续互通</p>
+<h2>加密云同步</h2>
+<p class="muted">两台设备填写相同的服务地址、公开密钥、同步码和同步密码。密码只保存在当前设备，不会上传。</p>
+<form id="syncForm">
+<label>Supabase 项目地址<input class="field" id="endpoint" type="url" placeholder="https://xxxx.supabase.co" autocomplete="url"></label>
+<label>Supabase 公开 anon key<input class="field" id="anonKey" type="password" placeholder="eyJ..." autocomplete="off"></label>
+<label>同步码<div class="inline-field"><input class="field" id="syncId" placeholder="首次可自动生成" autocomplete="off"><button class="btn secondary" type="button" id="newCode">生成</button><button class="btn secondary" type="button" id="copyCode">复制</button></div></label>
+<label>同步密码<input class="field" id="passphrase" type="password" minlength="8" placeholder="至少 8 位，两台设备保持一致" autocomplete="new-password"></label>
+<label class="check"><input id="autoSync" type="checkbox" checked> 打开应用及联网恢复时自动同步</label>
+<div class="sync-actions"><button class="btn" type="submit">保存并同步</button><button class="btn danger" id="disconnect" type="button">停用本机云同步</button></div>
+</form>
+</section>
+</div>
+
+<details class="panel setup">
+<summary>首次配置 Supabase（约 3 分钟）</summary>
+<ol>
+<li>创建一个免费 Supabase 项目，打开 SQL Editor。</li>
+<li>复制项目内 <code>supabase-sync.sql</code> 的全部内容并运行。</li>
+<li>从 Project Settings 的 API 页面复制 Project URL 和 anon public key。</li>
+<li>电脑先生成同步码并保存；手机填写完全相同的四项信息。</li>
+</ol>
+<p class="fineprint">同步使用随机同步码定位数据，并用你的密码执行 AES-GCM 端到端加密。请妥善保存同步码和密码，丢失后无法解密云端内容。</p>
+</details>
+</main>
+</body>
+</html>

@@ -1,0 +1,36 @@
+const CONFIG_KEY='ky5_sync_config';
+const META_KEY='ky5_sync_meta';
+const DATA_KEYS=['ky5_state','ky5_settings','ky5_pool','ky5_reading','ky5_sentence','ky5_exam_text','ky5_theme'];
+const encoder=new TextEncoder(),decoder=new TextDecoder();
+
+const parse=(value,fallback=null)=>{try{return JSON.parse(value)??fallback}catch{return fallback}};
+const b64=bytes=>{let s='';bytes.forEach(b=>s+=String.fromCharCode(b));return btoa(s)};
+const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const normalizedEndpoint=value=>String(value||'').trim().replace(/\/+$/,'');
+
+export function getSyncConfig(){return parse(localStorage.getItem(CONFIG_KEY),{})||{}}
+export function saveSyncConfig(config){const next={endpoint:normalizedEndpoint(config.endpoint),anonKey:String(config.anonKey||'').trim(),syncId:String(config.syncId||'').trim(),passphrase:String(config.passphrase||''),autoSync:config.autoSync!==false};localStorage.setItem(CONFIG_KEY,JSON.stringify(next));return next}
+export function clearSyncConfig(){localStorage.removeItem(CONFIG_KEY);localStorage.removeItem(META_KEY)}
+export function isConfigured(config=getSyncConfig()){return Boolean(config.endpoint&&config.anonKey&&config.syncId&&config.passphrase?.length>=8)}
+export function createSyncId(){return crypto.randomUUID?.()||`${Date.now().toString(36)}-${b64(crypto.getRandomValues(new Uint8Array(18))).replace(/[+/=]/g,'').toLowerCase()}`}
+
+export function snapshot(){const data={};for(const key of DATA_KEYS){const value=localStorage.getItem(key);if(value!==null)data[key]=parse(value,value)}return{version:1,savedAt:Date.now(),data}}
+
+function latestRecord(a={},b={}){const at=Number(a.lastSeen||0),bt=Number(b.lastSeen||0),recent=bt>at?b:a;return{...a,...b,...recent,drawn:Boolean(a.drawn||b.drawn),errors:Math.max(a.errors||0,b.errors||0),correctStreak:Math.max(a.correctStreak||0,b.correctStreak||0),tailStage:Boolean(a.tailStage||b.tailStage)}}
+function mergeState(local={},remote={}){const records={...local.records};for(const[word,value]of Object.entries(remote.records||{}))records[word]=latestRecord(records[word],value);const history={...remote.history,...local.history};for(const d of new Set([...Object.keys(local.history||{}),...Object.keys(remote.history||{})]))history[d]=Math.max(local.history?.[d]||0,remote.history?.[d]||0);const localDate=local.lastStudyDate||'',remoteDate=remote.lastStudyDate||'';return{...remote,...local,records,history,rounds:{gaokao:Math.max(local.rounds?.gaokao||1,remote.rounds?.gaokao||1),kaoyan:Math.max(local.rounds?.kaoyan||1,remote.rounds?.kaoyan||1)},lastStudyDate:localDate>=remoteDate?localDate:remoteDate,streak:Math.max(local.streak||0,remote.streak||0)}}
+function mergePool(local,remote){if(!local)return remote;if(!remote)return local;if(local.date!==remote.date)return(local.date||'')>(remote.date||'')?local:remote;if(local.mode!==remote.mode)return local;const base=(local.completed?.length||0)>(remote.completed?.length||0)?local:remote;return{...base,items:[...new Set(base.items||[])],completed:[...new Set([...(local.completed||[]),...(remote.completed||[])])],locked:[...new Set([...(local.locked||[]),...(remote.locked||[])])]}}
+export function mergeSnapshots(local,remote){const out={version:1,savedAt:Date.now(),data:{...remote.data,...local.data}};out.data.ky5_state=mergeState(local.data?.ky5_state||{},remote.data?.ky5_state||{});out.data.ky5_pool=mergePool(local.data?.ky5_pool,remote.data?.ky5_pool);return out}
+export function applySnapshot(value){if(!value?.data)throw new Error('同步文件格式不正确');for(const[key,data]of Object.entries(value.data)){if(DATA_KEYS.includes(key)&&data!==undefined)localStorage.setItem(key,typeof data==='string'?data:JSON.stringify(data))}localStorage.setItem(META_KEY,JSON.stringify({lastAppliedAt:Date.now(),remoteSavedAt:value.savedAt||0}))}
+
+async function deriveKey(passphrase,syncId){const material=await crypto.subtle.importKey('raw',encoder.encode(passphrase),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt:encoder.encode(`shici:${syncId}`),iterations:210000,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+async function encrypt(value,config){const iv=crypto.getRandomValues(new Uint8Array(12)),key=await deriveKey(config.passphrase,config.syncId),cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,encoder.encode(JSON.stringify(value)));return`${b64(iv)}.${b64(new Uint8Array(cipher))}`}
+async function decrypt(value,config){const[iv,cipher]=String(value).split('.').map(unb64),key=await deriveKey(config.passphrase,config.syncId),plain=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,cipher);return JSON.parse(decoder.decode(plain))}
+async function rpc(config,name,body){const response=await fetch(`${config.endpoint}/rest/v1/rpc/${name}`,{method:'POST',headers:{apikey:config.anonKey,Authorization:`Bearer ${config.anonKey}`,'Content-Type':'application/json'},body:JSON.stringify(body)});if(!response.ok)throw new Error(`云服务返回 ${response.status}: ${(await response.text()).slice(0,180)}`);const text=await response.text();return text?JSON.parse(text):null}
+
+export async function syncNow(config=getSyncConfig()){if(!isConfigured(config))throw new Error('请先完整填写云同步配置');const local=snapshot();const result=await rpc(config,'get_sync',{p_sync_id:config.syncId}),row=Array.isArray(result)?result[0]:result;let merged=local;if(row?.payload){let remote;try{remote=await decrypt(row.payload,config)}catch{throw new Error('无法解密云端数据，请检查同步码和同步密码是否一致')}merged=mergeSnapshots(local,remote);applySnapshot(merged)}const payload=await encrypt(merged,config);await rpc(config,'put_sync',{p_sync_id:config.syncId,p_payload:payload});const meta={lastSyncAt:Date.now(),remoteSavedAt:merged.savedAt};localStorage.setItem(META_KEY,JSON.stringify(meta));return{merged,meta,hadRemote:Boolean(row?.payload)}}
+
+export function exportSyncFile(){const blob=new Blob([JSON.stringify(snapshot(),null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`shici-sync-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+export async function importSyncFile(file){const incoming=JSON.parse(await file.text()),merged=mergeSnapshots(snapshot(),incoming);applySnapshot(merged);return merged}
+
+let timer;
+export function startAutoSync(onStatus=()=>{}){clearInterval(timer);const run=async()=>{const config=getSyncConfig();if(!isConfigured(config)||config.autoSync===false||!navigator.onLine)return;try{onStatus('busy');await syncNow(config);onStatus('ready')}catch(error){onStatus('error',error)}};setTimeout(run,1200);timer=setInterval(run,60000);window.addEventListener('online',run);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')run()});return run}
