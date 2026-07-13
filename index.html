@@ -57,6 +57,14 @@
 <button class="btn secondary" id="poolBtn">编辑学习池</button>
 <button class="btn secondary" id="reviewBtn">到期复习</button>
 </div>
+<div class="today-task" id="todayTask" aria-live="polite">
+<div class="today-task-copy">
+<span>今日任务</span>
+<strong id="todayCount">0 / 0</strong>
+<small id="todayRemaining">正在读取学习池</small>
+</div>
+<progress id="todayProgress" value="0" max="1" aria-label="今日任务完成进度"></progress>
+</div>
 <div class="card" id="card">
 <div>
 <p class="phonetic" id="source">

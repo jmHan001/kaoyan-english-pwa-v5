@@ -15,6 +15,7 @@ function renderChoices(word){currentOptions=makeOptions(word);const wrap=$('#cho
 
 function renderStats(){const x=stats();
 $('#stats').innerHTML=`<div class="stat"><strong>${x.gaokao.rate}%</strong><span>高考掌握率 · ${x.gaokao.mastered}/${x.gaokao.total}</span></div><div class="stat"><strong>${x.kaoyan.rate}%</strong><span>考研掌握率 · ${x.kaoyan.mastered}/${x.kaoyan.total}</span></div><div class="stat"><strong>${x.due}</strong><span>到期复习</span></div><div class="stat"><strong>${x.streak} 天</strong><span>连续学习</span></div>`}
+function renderTaskProgress(){if(!pool)return{total:0,done:0};const total=pool.items.length,completed=new Set(pool.completed||[]),done=pool.items.filter(word=>completed.has(word)).length,remaining=Math.max(0,total-done),progress=$('#todayProgress');$('#todayCount').textContent=`${done} / ${total}`;$('#todayRemaining').textContent=total?(remaining?`还剩 ${remaining} 个单词需要答对`:'今日任务已全部答对'):'学习池为空，请在编辑学习池中添加单词';progress.max=Math.max(1,total);progress.value=done;$('#todayTask').classList.toggle('complete',total>0&&done===total);return{total,done}}
 function chunks(word){const parts=word.match(/[^aeiouy]*[aeiouy]+(?:[^aeiouy](?=[^aeiouy]*[aeiouy])|[^aeiouy]*$)/gi);return parts?.length>1?parts.join(' · '):word}function current(){return findWord(queue[index])}function render(){const w=current();
 answered=false;
 $('#memoryPack').classList.add('hidden');
@@ -24,6 +25,8 @@ $('#nextWord').classList.add('hidden');
 $('#reveal').classList.remove('hidden');
 if(!w){$('#card').classList.add('hidden');
 $('#done').classList.remove('hidden');
+const task=renderTaskProgress();
+if(!reviewMode&&task.total>0&&task.done===task.total)$('#done').textContent=`今日任务已完成：${task.done}/${task.total}。连续正确次数会在后续复习中继续累计。`;
 return}$('#card').classList.remove('hidden');
 $('#done').classList.add('hidden');
 $('#word').textContent=w.word;
@@ -40,6 +43,7 @@ $('#example').innerHTML=examples[0]?.sentence?examples[0].sentence.replace(new R
 $('#exampleCn').textContent=examples[0]?.translation||'';
 $('#wordKnowledge').innerHTML=`<div class="detail-grid"><section class="detail-section"><h3>高频考点</h3><p class="exam-point">${keyPoint(w)}</p></section><section class="detail-section"><h3>词组搭配</h3>${phrases.length?phrases.slice(0,4).map(p=>`<p><strong>${p.phrase}</strong>　${p.translation}</p>`).join(''):'<p>暂无搭配数据</p>'}</section><section class="detail-section"><h3>词根提示</h3><p>${rootHint(w.word)}</p></section><section class="detail-section"><h3>近义关联</h3><p>${near.length?near.map(x=>`<span class="chip">${x.word}</span>`).join(' '):'暂无可靠近义关联'}</p></section><section class="detail-section"><h3>更多例句</h3>${examples.slice(1,3).map(x=>`<p class="example">${x.sentence}</p><p class="example-cn">${x.translation||''}</p>`).join('')||'<p>暂无更多例句</p>'}</section></div>`}
 function renderPool(){pool=getPool();
+renderTaskProgress();
 $('#poolList').innerHTML=pool.items.map(w=>{const x=findWord(w);
 return`<div class="row"><div><strong>${w}</strong><small>${x?.translation||''}</small></div><div class="row-actions"><button class="iconbtn" data-lock="${w}" title="锁定">${pool.locked?.includes(w)?'锁':'固'}</button><button class="iconbtn" data-replace="${w}" title="替换">换</button><button class="iconbtn" data-remove="${w}" title="删除">删</button></div></div>`}).join('')||'<div class="empty">学习池为空</div>'}
 function speak(lang){const w=current();
@@ -49,7 +53,7 @@ u.lang=lang;
 u.rate=.86;
 speechSynthesis.cancel();
 speechSynthesis.speak(u)}
-function finishChoice(correct,selectedIndex=-1){if(answered)return;const w=current();if(!w)return;answered=true;const record=rate(w.word,correct?3:1,w.source);if(!correct)queue.splice(Math.min(index+4,queue.length),0,w.word);if(!reviewMode){pool.completed=[...new Set([...pool.completed,w.word])];localStorage.setItem('ky5_pool',JSON.stringify(pool))}const buttons=[...document.querySelectorAll('.choice-option')];buttons.forEach((button,i)=>{button.disabled=true;if(currentOptions[i]?.word===w.word)button.classList.add('correct');else if(i===selectedIndex)button.classList.add('wrong')});$('#phonetic').textContent=`美 /${w.us||'暂无'}/　英 /${w.uk||'暂无'}/`;$('#memoryPack').classList.remove('hidden');$('#recallCue').classList.add('hidden');$('#reveal').classList.add('hidden');$('#nextWord').classList.remove('hidden');const feedback=$('#choiceFeedback');feedback.textContent=correct?(record.correctStreak>=3?'回答正确，已连续正确 3 次，标记为已掌握。':`回答正确，连续正确 ${record.correctStreak}/3。`):'本次已按错误记录，连续正确已清零，并加入本轮回炉。';feedback.className=`choice-feedback ${correct?'correct':'wrong'}`;$('#memoryBadge').textContent=record.tailStage?'已连续正确 3 次':`连续正确 ${record.correctStreak||0}/3`;$('#memoryBadge').classList.toggle('tail',!!record.tailStage);renderStats()}
+function finishChoice(correct,selectedIndex=-1){if(answered)return;const w=current();if(!w)return;answered=true;const record=rate(w.word,correct?3:1,w.source);if(!correct)queue.splice(Math.min(index+4,queue.length),0,w.word);if(!reviewMode){const completed=new Set(pool.completed||[]);if(correct)completed.add(w.word);else completed.delete(w.word);pool.completed=[...completed];localStorage.setItem('ky5_pool',JSON.stringify(pool));renderTaskProgress()}const buttons=[...document.querySelectorAll('.choice-option')];buttons.forEach((button,i)=>{button.disabled=true;if(currentOptions[i]?.word===w.word)button.classList.add('correct');else if(i===selectedIndex)button.classList.add('wrong')});$('#phonetic').textContent=`美 /${w.us||'暂无'}/　英 /${w.uk||'暂无'}/`;$('#memoryPack').classList.remove('hidden');$('#recallCue').classList.add('hidden');$('#reveal').classList.add('hidden');$('#nextWord').classList.remove('hidden');const feedback=$('#choiceFeedback');feedback.textContent=correct?(record.correctStreak>=3?'回答正确，已连续正确 3 次，标记为已掌握。':`回答正确，连续正确 ${record.correctStreak}/3。`):'本次未计入今日完成，连续正确已清零，并加入本轮回炉。';feedback.className=`choice-feedback ${correct?'correct':'wrong'}`;$('#memoryBadge').textContent=record.tailStage?'已连续正确 3 次':`连续正确 ${record.correctStreak||0}/3`;$('#memoryBadge').classList.toggle('tail',!!record.tailStage);renderStats()}
 async function init(){await loadVocabulary();
 const mig=migrateLegacy();
 const s=getSettings();
@@ -58,6 +62,7 @@ $('#daily').value=String(s.daily);
 pool=getPool();
 queue=pool.items.filter(x=>!pool.completed.includes(x));
 renderStats();
+renderTaskProgress();
 render();
 if(!mig.done)$('#done').innerHTML=`旧数据迁移失败。<button class="btn" id="backupOld">导出旧数据</button>`;
 if('serviceWorker'in navigator){const reg=await navigator.serviceWorker.register('./sw.js');

@@ -47,3 +47,25 @@
   .choice-grid { grid-template-columns: 1fr; }
   .choice-option { min-height: 60px; }
 }
+
+.today-task { display: grid; grid-template-columns: minmax(180px,auto) 1fr; align-items: center; gap: 18px; margin: 4px 0 18px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--soft,#eef0e8); }
+.today-task-copy { display: grid; grid-template-columns: auto auto; align-items: baseline; gap: 3px 12px; }
+.today-task-copy span { color: var(--muted); font-size: .82rem; font-weight: 750; }
+.today-task-copy strong { font-size: 1.25rem; }
+.today-task-copy small { grid-column: 1 / -1; color: var(--muted); }
+.today-task progress { width: 100%; height: 12px; border: 0; border-radius: 999px; overflow: hidden; background: var(--line); }
+.today-task progress::-webkit-progress-bar { background: var(--line); border-radius: 999px; }
+.today-task progress::-webkit-progress-value { background: var(--accent); border-radius: 999px; transition: width .25s ease; }
+.today-task progress::-moz-progress-bar { background: var(--accent); border-radius: 999px; }
+.today-task.complete { background: #e7f1e9; border-color: #8cb298; }
+.today-task.complete progress::-webkit-progress-value { background: var(--green); }
+[data-theme="dark"] .today-task { background: #263129; }
+[data-theme="dark"] .today-task.complete { background: #294332; border-color: #6aa87b; }
+
+@media (max-width: 700px) {
+  .today-task { grid-template-columns: 1fr; gap: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .today-task progress::-webkit-progress-value { transition: none; }
+}
