@@ -3,7 +3,7 @@ import{getPool,remove,replace,toggleLock,add,fill}from'./learning-pool.js';
 import{rate,dueWords,wrongWords}from'./review-manager.js';
 import{stats}from'./stats.js';
 import{rootHint,keyPoint,nearWords}from'./knowledge.js';
-import{startAutoSync}from'./cloud-sync.js';
+import{startAutoSync}from'./cloud-sync.js?v=5.6.1';
 
 let pool,index=0,queue=[],reviewMode=false,currentOptions=[],answered=false;
 const $=s=>document.querySelector(s),label={gaokao:'高考词',kaoyan:'考研词',both:'高考与考研共有'};
