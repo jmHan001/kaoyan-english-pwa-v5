@@ -61,9 +61,27 @@
 .today-task.complete progress::-webkit-progress-value { background: var(--green); }
 [data-theme="dark"] .today-task { background: #263129; }
 [data-theme="dark"] .today-task.complete { background: #294332; border-color: #6aa87b; }
+.acceptance-panel { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 14px; margin: -4px 0 18px; padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: #f5f0e7; }
+.acceptance-panel strong { display: block; font-size: 1.6rem; letter-spacing: -.04em; }
+.acceptance-panel p { margin: 4px 0 0; color: var(--muted); line-height: 1.55; }
+.acceptance-panel.pass { background: #e7f1e9; border-color: #8cb298; }
+.acceptance-panel.warn { background: #f8ece9; border-color: #dfb5ad; }
+.acceptance-checks { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; min-width: 220px; }
+.acceptance-checks span { display: inline-flex; align-items: center; min-height: 32px; padding: 6px 9px; border-radius: 9px; background: rgba(255,255,255,.6); color: var(--muted); font-size: .8rem; font-weight: 780; }
+.acceptance-checks .ok { color: var(--green); background: #dcecdf; }
+.acceptance-checks .wait { color: #8a6233; background: #f5e8d4; }
+[data-theme="dark"] .acceptance-panel { background: #2b332b; border-color: #46544b; }
+[data-theme="dark"] .acceptance-panel.pass { background: #294332; border-color: #6aa87b; }
+[data-theme="dark"] .acceptance-panel.warn { background: #4a2c29; border-color: #c87970; }
+[data-theme="dark"] .acceptance-checks span { background: #263129; }
+[data-theme="dark"] .acceptance-checks .ok { background: #294332; color: #d9f0df; }
+[data-theme="dark"] .acceptance-checks .wait { background: #4b3e25; color: #ffe4a3; }
 
 @media (max-width: 700px) {
   .today-task { grid-template-columns: 1fr; gap: 10px; }
+  .acceptance-panel { grid-template-columns: 1fr; }
+  .acceptance-checks { justify-content: flex-start; min-width: 0; }
+  .acceptance-panel .btn { width: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
