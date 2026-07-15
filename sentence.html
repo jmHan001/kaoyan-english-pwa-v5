@@ -25,27 +25,51 @@
 </header>
 <section class="panel">
 <h1>把长句，拆成能读懂的小段。</h1>
-<label class="sentence-label" for="contextInput">ChatGPT 聊天上下文</label>
-<textarea class="field" id="contextInput" rows="5" style="width:100%" placeholder="复制当前授权聊天窗口里的内容，或点“从剪贴板读取”。这里只保存你主动导入的内容。">
-</textarea>
 <div class="toolbar" style="margin-top:12px">
-<button class="btn secondary" id="readClipboard">从剪贴板读取</button>
-<button class="btn secondary" id="extractSentences">提取英文长句</button>
-<button class="btn secondary" id="clearContext">清空上下文</button>
+<button class="btn" id="importClipboard">从剪贴板导入</button>
+<button class="btn secondary" id="clearImport">清空导入内容</button>
+<button class="btn secondary" id="sample">填入示例</button>
 </div>
 <div id="importNotice" class="notice hidden"></div>
-<div id="candidates" class="sentence-candidates hidden"></div>
-<label class="sentence-label" for="input">当前长难句</label>
-<textarea class="field" id="input" rows="6" style="width:100%" placeholder="粘贴英文长句">
-</textarea>
+<div id="duplicateNotice" class="notice hidden"></div>
+<div class="sentence-form">
+<label class="sentence-label" for="sentenceNumber">句子编号</label>
+<input class="field" id="sentenceNumber" placeholder="Exercise 1 - Sentence 03">
+<label class="sentence-label" for="source">来源</label>
+<input class="field" id="source" placeholder="2011 英语二完形">
+<label class="sentence-label" for="originalSentence">原句</label>
+<textarea class="field" id="originalSentence" rows="5" placeholder="英文完整句子"></textarea>
+<label class="sentence-label" for="chunks">意群切分</label>
+<textarea class="field" id="chunks" rows="5" placeholder="1. 第一意群&#10;2. 第二意群"></textarea>
+<label class="sentence-label" for="vocabulary">核心词汇</label>
+<textarea class="field" id="vocabulary" rows="4" placeholder="- word：中文释义"></textarea>
+<label class="sentence-label" for="mainClause">句子主干</label>
+<textarea class="field" id="mainClause" rows="3" placeholder="主语 + 谓语 + 宾语"></textarea>
+<label class="sentence-label" for="structureAnalysis">句子结构</label>
+<textarea class="field" id="structureAnalysis" rows="6" placeholder="- 时间状语：&#10;- 定语从句："></textarea>
+<label class="sentence-label" for="translation">参考翻译</label>
+<textarea class="field" id="translation" rows="4" placeholder="完整中文译文"></textarea>
+<label class="sentence-label" for="grammarNotes">语法笔记</label>
+<textarea class="field" id="grammarNotes" rows="5" placeholder="1. 知识点"></textarea>
+<label class="sentence-label" for="fixedExpressions">固定搭配</label>
+<textarea class="field" id="fixedExpressions" rows="4" placeholder="- expression = 中文含义"></textarea>
+<label class="sentence-label" for="userMistakes">个人易错点</label>
+<textarea class="field" id="userMistakes" rows="5" placeholder="- 错误：&#10;  正确：&#10;  原因："></textarea>
+<label class="sentence-label" for="testResult">毕业测试</label>
+<input class="field" id="testResult" placeholder="得分：8/10">
+<label class="sentence-label" for="masteryStatus">掌握状态</label>
+<input class="field" id="masteryStatus" placeholder="completed">
+<label class="sentence-label" for="unrecognized">未识别内容</label>
+<textarea class="field" id="unrecognized" rows="4" placeholder="无法识别的内容会放在这里"></textarea>
+</div>
 <div class="toolbar" style="margin-top:12px">
-<button class="btn" id="analyze">开始拆分</button>
-<button class="btn secondary" id="saveAnalysis">保存长难句和解析</button>
-<button class="btn secondary" id="sample">填入示例</button>
+<button class="btn secondary" id="previewImport">解析预览</button>
+<button class="btn" id="saveAnalysis">保存</button>
 </div>
 </section>
 <section class="panel" style="margin-top:16px">
 <div class="notice">绿色高考 · 蓝色考研 · 紫色共有 · 红色未收录。点击单词查看详情。</div>
+<div id="previewPanel" class="sentence-preview hidden"></div>
 <div id="segments" class="passage">
 <div class="empty">输入句子后开始分析</div>
 </div>
@@ -74,7 +98,18 @@
 </div>
 </div>
 </div>
-<script type="module" src="sentence.js?v=5.6.6">
+<div class="modal hidden" id="duplicateModal">
+<div class="modal-card">
+<h2>该长难句可能已经存在。</h2>
+<p id="duplicateText"></p>
+<div class="toolbar">
+<button class="btn secondary" id="viewDuplicate">查看已有记录</button>
+<button class="btn" id="overwriteForm">覆盖表单内容</button>
+<button class="btn secondary" id="cancelImport">取消导入</button>
+</div>
+</div>
+</div>
+<script type="module" src="sentence.js?v=5.6.7">
 </script>
 </body>
 </html>

@@ -1,32 +1,60 @@
 import{loadVocabulary,findWord}from'./vocabulary-manager.js';
 import{add}from'./learning-pool.js';
+import{FIELD_KEYS,findDuplicateSentence,parseStructuredSentenceMaterial}from'./sentence-parser.mjs';
 
 const $=s=>document.querySelector(s);
-const KEYS={sentence:'ky5_sentence',context:'ky5_sentence_context',history:'ky5_sentence_history'};
-let selected='',lastAnalysis=null;
+const KEYS={sentence:'ky5_sentence',history:'ky5_sentence_history'};
+const FIELD_LABELS={
+  sentenceNumber:'句子编号',
+  source:'来源',
+  originalSentence:'原句',
+  chunks:'意群切分',
+  vocabulary:'核心词汇',
+  mainClause:'句子主干',
+  structureAnalysis:'句子结构',
+  translation:'参考翻译',
+  grammarNotes:'语法笔记',
+  fixedExpressions:'固定搭配',
+  userMistakes:'个人易错点',
+  testResult:'毕业测试',
+  masteryStatus:'掌握状态',
+  unrecognized:'未识别内容'
+};
+let selected='',pendingImport=null,pendingDuplicate=null;
 
 await loadVocabulary();
-$('#input').value=localStorage.getItem(KEYS.sentence)||'';
-$('#contextInput').value=localStorage.getItem(KEYS.context)||'';
 
 const readJson=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}};
 const saveJson=(key,value)=>localStorage.setItem(key,JSON.stringify(value));
 const esc=value=>String(value||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const wordCount=text=>(String(text).match(/[A-Za-z]+(?:'[A-Za-z]+)?/g)||[]).length;
+const lines=value=>String(value||'').split('\n').map(x=>x.trim()).filter(Boolean);
+const fieldIds=[...FIELD_KEYS,'unrecognized'];
 const labelOf=x=>x==='both'?'高考与考研共有':x==='gaokao'?'高考词':x==='kaoyan'?'考研词':'未收录';
 
-function segmentRole(text,index){
-  if(index===0)return'主干候选';
-  if(/\b(although|though|while|whereas|even if|even though)\b/i.test(text))return'让步或对比';
-  if(/\b(because|since|as|therefore|thus|so that)\b/i.test(text))return'因果关系';
-  if(/\b(which|that|who|whom|whose|where|when)\b/i.test(text))return'从句修饰';
-  if(/\b(if|unless|provided)\b/i.test(text))return'条件关系';
-  if(/\b(and|or|but|however|rather than)\b/i.test(text))return'并列或转折';
-  return'补充成分';
+function history(){return readJson(KEYS.history,[])}
+
+function readForm(){
+  const record={};
+  for(const id of fieldIds)record[id]=$(`#${id}`)?.value?.trim()||'';
+  return record;
 }
 
-function splitSentence(text){
-  return String(text||'').trim().split(/(?<=[,;:.!?])\s+|\s+(?=(?:although|because|while|which|that|who|whom|whose|when|where|if|unless|but|and|or|however|therefore|rather than)\b)/i).map(x=>x.trim()).filter(Boolean);
+function fillForm(record){
+  for(const id of fieldIds){
+    const el=$(`#${id}`);
+    if(el)el.value=record?.[id]||'';
+  }
+  localStorage.setItem(KEYS.sentence,record?.originalSentence||'');
+  renderPreview(record);
+  renderSegments(record);
+}
+
+function clearForm(){
+  fillForm({});
+  $('#previewPanel').classList.add('hidden');
+  $('#segments').innerHTML='<div class="empty">输入句子后开始分析</div>';
+  $('#duplicateNotice').classList.add('hidden');
+  $('#importNotice').classList.add('hidden');
 }
 
 function markWords(text){
@@ -36,108 +64,166 @@ function markWords(text){
   });
 }
 
-function extractLongSentences(text){
-  const raw=String(text||'').replace(/\r/g,'\n');
-  const chunks=raw.split(/(?<=[.!?])\s+|\n+/).map(x=>x.trim()).filter(Boolean);
-  const candidates=[];
-  for(const chunk of chunks){
-    const cleaned=chunk.replace(/^(user|assistant|ChatGPT|我|你|用户|助手)\s*[:：-]\s*/i,'').trim();
-    if(!/[A-Za-z]/.test(cleaned))continue;
-    const count=wordCount(cleaned);
-    if(count>=10)candidates.push(cleaned);
-  }
-  return [...new Set(candidates)].slice(0,20);
+function renderPreview(record=readForm()){
+  const sections=[
+    'originalSentence',
+    'chunks',
+    'vocabulary',
+    'mainClause',
+    'structureAnalysis',
+    'translation',
+    'grammarNotes',
+    'userMistakes',
+    'masteryStatus'
+  ];
+  $('#previewPanel').classList.remove('hidden');
+  $('#previewPanel').innerHTML=`<h2>解析预览</h2>${sections.map(key=>`<section><strong>${FIELD_LABELS[key]}</strong><p>${record[key]?esc(record[key]).replace(/\n/g,'<br>'):'未识别'}</p></section>`).join('')}`;
 }
 
-function renderCandidates(list){
-  const box=$('#candidates');
-  if(!list.length){box.classList.add('hidden');box.innerHTML='';return}
-  box.classList.remove('hidden');
-  box.innerHTML=`<h3>提取到 ${list.length} 个英文长句</h3>${list.map((text,i)=>`<button class="sentence-candidate" data-candidate="${i}"><strong>${i+1}</strong><span>${esc(text)}</span><small>${wordCount(text)} 词</small></button>`).join('')}`;
-}
-
-function analyze(){
-  const text=$('#input').value.trim();
-  localStorage.setItem(KEYS.sentence,text);
-  localStorage.setItem(KEYS.context,$('#contextInput').value.trim());
-  const parts=splitSentence(text);
-  lastAnalysis={sentence:text,context:$('#contextInput').value.trim(),segments:parts.map((part,index)=>({role:segmentRole(part,index),text:part})),at:Date.now()};
-  $('#segments').innerHTML=lastAnalysis.segments.map(seg=>`<p><strong>${esc(seg.role)}</strong><br>${markWords(seg.text)}</p>`).join('')||'<div class="empty">请输入英文句子</div>';
-}
-
-function history(){
-  return readJson(KEYS.history,[]);
+function renderSegments(record=readForm()){
+  const chunkLines=lines(record.chunks).length?lines(record.chunks):[record.originalSentence].filter(Boolean);
+  $('#segments').innerHTML=chunkLines.length?chunkLines.map((text,index)=>`<p><strong>意群 ${index+1}</strong><br>${markWords(text.replace(/^[\-\u2022①-⑳]?\s*\d*[.)、]?\s*/,''))}</p>`).join(''):'<div class="empty">输入句子后开始分析</div>';
 }
 
 function renderHistory(){
   const items=history();
-  $('#history').innerHTML=items.length?items.slice(0,30).map(item=>`<button class="history-item" data-history="${esc(item.id)}"><strong>${esc(item.sentence)}</strong><small>${new Date(item.at).toLocaleString('zh-CN')} · ${item.segments?.length||0} 段 · ${wordCount(item.sentence)} 词</small></button>`).join(''):'<div class="empty">还没有保存记录</div>';
+  $('#history').innerHTML=items.length?items.slice(0,30).map(item=>`<button class="history-item" data-history="${esc(item.id)}"><strong>${esc(item.originalSentence||item.sentence||'未命名长难句')}</strong><small>${esc(item.sentenceNumber||'无编号')} · ${esc(item.source||'无来源')} · ${new Date(item.at).toLocaleString('zh-CN')}</small></button>`).join(''):'<div class="empty">还没有保存记录</div>';
+}
+
+function showNotice(message,type=''){
+  const el=$('#importNotice');
+  el.textContent=message;
+  el.className=`notice ${type}`.trim();
+}
+
+function applyParsedResult(parsed){
+  pendingImport=parsed.record;
+  const duplicate=findDuplicateSentence(history(),parsed.record.originalSentence);
+  if(duplicate){
+    pendingDuplicate=duplicate;
+    $('#duplicateText').textContent=duplicate.originalSentence||duplicate.sentence||'已有记录';
+    $('#duplicateModal').classList.remove('hidden');
+    return;
+  }
+  fillForm(parsed.record);
+  showNotice(parsed.warnings.length?`已导入，但存在提示：${parsed.warnings.join('；')}`:'已导入剪贴板内容，请检查预览后手动保存。');
+}
+
+async function importClipboard(){
+  let text='';
+  try{
+    text=await navigator.clipboard.readText();
+  }catch{
+    showNotice('浏览器拒绝剪贴板权限。请允许权限，或手动复制后重试。','warn');
+    return;
+  }
+  if(!text.trim()){
+    showNotice('剪贴板为空。请先复制 ChatGPT 输出的【网页长难句资料】。','warn');
+    return;
+  }
+  const parsed=parseStructuredSentenceMaterial(text);
+  if(!parsed.ok){
+    fillForm(parsed.record);
+    showNotice(parsed.errors.join('；'),'warn');
+    return;
+  }
+  applyParsedResult(parsed);
 }
 
 function saveAnalysis(){
-  if(!lastAnalysis)analyze();
-  if(!lastAnalysis?.sentence)return;
-  const items=history().filter(x=>x.sentence!==lastAnalysis.sentence);
-  items.unshift({...lastAnalysis,id:crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`});
-  saveJson(KEYS.history,items.slice(0,80));
-  $('#importNotice').textContent='已保存当前长难句、聊天上下文和拆分解析。';
-  $('#importNotice').classList.remove('hidden');
+  const record=readForm();
+  if(!record.originalSentence){
+    showNotice('无法保存：缺少【原句】字段。','warn');
+    return;
+  }
+  const items=history().filter(x=>findDuplicateSentence([x],record.originalSentence)===null);
+  items.unshift({...record,id:crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,at:Date.now()});
+  saveJson(KEYS.history,items.slice(0,100));
+  localStorage.setItem(KEYS.sentence,record.originalSentence);
+  showNotice('已保存。后续复习、测试和掌握状态由网页本地记录管理。');
   renderHistory();
 }
 
-$('#analyze').onclick=analyze;
+$('#importClipboard').onclick=importClipboard;
+$('#clearImport').onclick=clearForm;
+$('#previewImport').onclick=()=>{const record=readForm();renderPreview(record);renderSegments(record)};
 $('#saveAnalysis').onclick=saveAnalysis;
 $('#sample').onclick=()=>{
-  $('#contextInput').value='ChatGPT: Please analyze this sentence for exam reading.';
-  $('#input').value='Although technology has made information easier to obtain, the ability to judge which sources are relevant remains essential for students who wish to develop an independent perspective.';
-  analyze();
+  const sample=`【网页长难句资料】
+
+【句子编号】
+Exercise 1 - Sentence 03
+
+【来源】
+2011 英语二完形
+
+【原句】
+When the work is well done, a climate of accident-free operations is established where time lost due to injuries is kept at a minimum.
+
+【意群切分】
+1. When the work is well done,
+2. a climate of accident-free operations is established
+3. where time lost due to injuries is kept at a minimum.
+
+【核心词汇】
+- climate：氛围
+- operation：运行
+
+【句子主干】
+a climate is established
+
+【句子结构】
+- 时间状语：When the work is well done
+- 定语从句：where time lost due to injuries is kept at a minimum
+- 过去分词短语：lost due to injuries
+
+【参考翻译】
+当工作做得很好时，就会形成一种无事故运行的氛围，在这种氛围中，因受伤而损失的时间会被降到最低。
+
+【语法笔记】
+1. When 引导时间状语从句。
+2. where 引导定语从句，修饰 climate。
+
+【固定搭配】
+- keep ... at a minimum = 把……保持在最低限度
+
+【个人易错点】
+- 错误：把 where 理解为地点状语
+  正确：where 修饰抽象名词 climate
+  原因：抽象地点也可以用 where 引导定语从句
+
+【毕业测试】
+得分：8/10
+
+【掌握状态】
+completed`;
+  applyParsedResult(parseStructuredSentenceMaterial(sample));
 };
-$('#readClipboard').onclick=async()=>{
-  try{
-    const text=await navigator.clipboard.readText();
-    $('#contextInput').value=text;
-    localStorage.setItem(KEYS.context,text);
-    const list=extractLongSentences(text);
-    renderCandidates(list);
-    if(list[0]){$('#input').value=list[0];analyze()}
-    $('#importNotice').textContent=list.length?`已从剪贴板读取，并提取到 ${list.length} 个英文长句。`:'已读取剪贴板，但没有发现 10 词以上英文长句。';
-  }catch{
-    $('#importNotice').textContent='浏览器没有允许读取剪贴板。请手动粘贴聊天内容，再点“提取英文长句”。';
-  }
-  $('#importNotice').classList.remove('hidden');
+
+$('#viewDuplicate').onclick=()=>{
+  $('#duplicateModal').classList.add('hidden');
+  renderHistory();
+  $('#duplicateNotice').textContent='已定位到已有记录列表。请选择历史记录查看，或点击“覆盖表单内容”重新导入。';
+  $('#duplicateNotice').classList.remove('hidden');
+  $('#history').scrollIntoView({behavior:'smooth',block:'center'});
 };
-$('#extractSentences').onclick=()=>{
-  const text=$('#contextInput').value.trim();
-  localStorage.setItem(KEYS.context,text);
-  const list=extractLongSentences(text);
-  renderCandidates(list);
-  if(list[0]){$('#input').value=list[0];analyze()}
-  $('#importNotice').textContent=list.length?`提取到 ${list.length} 个英文长句。点击候选句可切换。`:'没有发现 10 词以上英文长句。';
-  $('#importNotice').classList.remove('hidden');
+$('#overwriteForm').onclick=()=>{
+  $('#duplicateModal').classList.add('hidden');
+  fillForm(pendingImport);
+  showNotice('已覆盖表单内容，但没有覆盖已保存记录。检查后可手动保存。');
 };
-$('#clearContext').onclick=()=>{
-  $('#contextInput').value='';
-  $('#input').value='';
-  localStorage.removeItem(KEYS.context);
-  localStorage.removeItem(KEYS.sentence);
-  $('#candidates').classList.add('hidden');
-  $('#segments').innerHTML='<div class="empty">输入句子后开始分析</div>';
-};
-$('#clearHistory').onclick=()=>{
-  if(confirm('确定清空已保存长难句历史？')){localStorage.removeItem(KEYS.history);renderHistory()}
+$('#cancelImport').onclick=()=>{
+  $('#duplicateModal').classList.add('hidden');
+  pendingImport=null;
+  pendingDuplicate=null;
+  showNotice('已取消导入。');
 };
 
 document.addEventListener('click',e=>{
-  const candidate=e.target.closest?.('[data-candidate]');
-  if(candidate){
-    const list=extractLongSentences($('#contextInput').value);
-    $('#input').value=list[Number(candidate.dataset.candidate)]||'';
-    analyze();
-  }
   const historyButton=e.target.closest?.('[data-history]');
   if(historyButton){
     const item=history().find(x=>x.id===historyButton.dataset.history);
-    if(item){$('#contextInput').value=item.context||'';$('#input').value=item.sentence||'';lastAnalysis=item;analyze()}
+    if(item)fillForm(item);
   }
   const w=e.target.dataset.word;
   if(w){
@@ -157,8 +243,19 @@ document.addEventListener('click',e=>{
   }
 });
 
+for(const id of fieldIds){
+  const el=$(`#${id}`);
+  if(el)el.addEventListener('input',()=>{renderPreview(readForm());renderSegments(readForm())});
+}
+
+$('#clearHistory').onclick=()=>{
+  if(confirm('确定清空已保存长难句历史？')){localStorage.removeItem(KEYS.history);renderHistory()}
+};
 $('#close').onclick=()=>$('#modal').classList.add('hidden');
 $('#add').onclick=()=>{add(selected);$('#modal').classList.add('hidden')};
-if($('#input').value)analyze();
-if($('#contextInput').value)renderCandidates(extractLongSentences($('#contextInput').value));
+
+const last=localStorage.getItem(KEYS.sentence);
+if(last)$('#originalSentence').value=last;
+renderPreview(readForm());
+renderSegments(readForm());
 renderHistory();
