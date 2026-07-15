@@ -1,5 +1,9 @@
 import assert from'node:assert/strict';
-import{findDuplicateSentence,normalizeSentence,parseStructuredSentenceMaterial}from'../sentence-parser.mjs';
+import{FIELD_KEYS,findDuplicateSentence,normalizeSentence,parseStructuredSentenceMaterial}from'../sentence-parser.mjs';
+
+assert.deepEqual(FIELD_KEYS.slice(0,8),[
+  'sentenceNumber','source','originalSentence','readingOrder','chunks','mainClause','structureAnalysis','vocabulary'
+]);
 
 const fullText=`闲聊内容
 【网页长难句资料】
@@ -12,6 +16,10 @@ Exercise 1 - Sentence 03
 
 【原句】
 When the work is well done, a climate of accident-free operations is established where time lost due to injuries is kept at a minimum.
+
+【阅读顺序】
+1. When the work is well done, = 当工作完成得很好时，
+2. a climate of accident-free operations is established = 一种无事故运行的氛围会被建立起来。
 
 【意群切分】
 1. When the work is well done,
@@ -57,6 +65,7 @@ completed`;
   assert.equal(parsed.record.sentenceNumber,'Exercise 1 - Sentence 03');
   assert.equal(parsed.record.source,'2011 英语二完形');
   assert.match(parsed.record.originalSentence,/accident-free operations/);
+  assert.match(parsed.record.readingOrder,/当工作完成得很好时/);
   assert.match(parsed.record.chunks,/1\. When the work/);
   assert.match(parsed.record.structureAnalysis,/过去分词短语/);
   assert.match(parsed.record.userMistakes,/原因：/);

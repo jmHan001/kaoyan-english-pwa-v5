@@ -28,6 +28,7 @@
 <div class="toolbar" style="margin-top:12px">
 <button class="btn" id="importClipboard">从剪贴板导入</button>
 <button class="btn secondary" id="clearImport">清空导入内容</button>
+<button class="btn secondary" id="copyGptTemplate">复制 GPT 输出模板</button>
 <button class="btn secondary" id="sample">填入示例</button>
 </div>
 <div id="importNotice" class="notice hidden"></div>
@@ -39,14 +40,16 @@
 <input class="field" id="source" placeholder="2011 英语二完形">
 <label class="sentence-label" for="originalSentence">原句</label>
 <textarea class="field" id="originalSentence" rows="5" placeholder="英文完整句子"></textarea>
+<label class="sentence-label" for="readingOrder">阅读顺序</label>
+<textarea class="field" id="readingOrder" rows="5" placeholder="按原文阅读推进写出理解顺序；保留英文短语和对应中文意思"></textarea>
 <label class="sentence-label" for="chunks">意群切分</label>
 <textarea class="field" id="chunks" rows="5" placeholder="1. 第一意群&#10;2. 第二意群"></textarea>
-<label class="sentence-label" for="vocabulary">核心词汇</label>
-<textarea class="field" id="vocabulary" rows="4" placeholder="- word：中文释义"></textarea>
 <label class="sentence-label" for="mainClause">句子主干</label>
 <textarea class="field" id="mainClause" rows="3" placeholder="主语 + 谓语 + 宾语"></textarea>
 <label class="sentence-label" for="structureAnalysis">句子结构</label>
 <textarea class="field" id="structureAnalysis" rows="6" placeholder="- 时间状语：&#10;- 定语从句："></textarea>
+<label class="sentence-label" for="vocabulary">核心词汇</label>
+<textarea class="field" id="vocabulary" rows="4" placeholder="- word：中文释义"></textarea>
 <label class="sentence-label" for="translation">参考翻译</label>
 <textarea class="field" id="translation" rows="4" placeholder="完整中文译文"></textarea>
 <label class="sentence-label" for="grammarNotes">语法笔记</label>
@@ -109,7 +112,7 @@
 </div>
 </div>
 </div>
-<script type="module" src="sentence.js?v=5.6.7">
+<script type="module" src="sentence.js?v=5.6.8">
 </script>
 </body>
 </html>

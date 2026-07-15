@@ -2,10 +2,11 @@ export const FIELD_MAP={
   '句子编号':'sentenceNumber',
   '来源':'source',
   '原句':'originalSentence',
+  '阅读顺序':'readingOrder',
   '意群切分':'chunks',
-  '核心词汇':'vocabulary',
   '句子主干':'mainClause',
   '句子结构':'structureAnalysis',
+  '核心词汇':'vocabulary',
   '参考翻译':'translation',
   '语法笔记':'grammarNotes',
   '固定搭配':'fixedExpressions',
@@ -14,6 +15,8 @@ export const FIELD_MAP={
   '掌握状态':'masteryStatus'
 };
 
+// Keep the array in classroom-learning order. The parser itself remains
+// order-independent, so older clipboard content is still accepted.
 export const FIELD_KEYS=Object.values(FIELD_MAP);
 
 const BLOCK_TITLE='网页长难句资料';
