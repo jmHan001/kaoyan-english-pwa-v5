@@ -25,10 +25,22 @@
 </header>
 <section class="panel">
 <h1>把长句，拆成能读懂的小段。</h1>
+<label class="sentence-label" for="contextInput">ChatGPT 聊天上下文</label>
+<textarea class="field" id="contextInput" rows="5" style="width:100%" placeholder="复制当前授权聊天窗口里的内容，或点“从剪贴板读取”。这里只保存你主动导入的内容。">
+</textarea>
+<div class="toolbar" style="margin-top:12px">
+<button class="btn secondary" id="readClipboard">从剪贴板读取</button>
+<button class="btn secondary" id="extractSentences">提取英文长句</button>
+<button class="btn secondary" id="clearContext">清空上下文</button>
+</div>
+<div id="importNotice" class="notice hidden"></div>
+<div id="candidates" class="sentence-candidates hidden"></div>
+<label class="sentence-label" for="input">当前长难句</label>
 <textarea class="field" id="input" rows="6" style="width:100%" placeholder="粘贴英文长句">
 </textarea>
 <div class="toolbar" style="margin-top:12px">
 <button class="btn" id="analyze">开始拆分</button>
+<button class="btn secondary" id="saveAnalysis">保存长难句和解析</button>
 <button class="btn secondary" id="sample">填入示例</button>
 </div>
 </section>
@@ -36,6 +48,15 @@
 <div class="notice">绿色高考 · 蓝色考研 · 紫色共有 · 红色未收录。点击单词查看详情。</div>
 <div id="segments" class="passage">
 <div class="empty">输入句子后开始分析</div>
+</div>
+</section>
+<section class="panel" style="margin-top:16px">
+<div class="toolbar">
+<h2 style="margin:0;flex:1">已保存长难句</h2>
+<button class="btn secondary" id="clearHistory">清空历史</button>
+</div>
+<div id="history" class="sentence-history">
+<div class="empty">还没有保存记录</div>
 </div>
 </section>
 </main>
@@ -53,7 +74,7 @@
 </div>
 </div>
 </div>
-<script type="module" src="sentence.js">
+<script type="module" src="sentence.js?v=5.6.6">
 </script>
 </body>
 </html>
