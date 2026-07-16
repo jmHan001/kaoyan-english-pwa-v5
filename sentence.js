@@ -1,6 +1,7 @@
 import{loadVocabulary,findWord}from'./vocabulary-manager.js';
 import{add}from'./learning-pool.js';
 import{FIELD_KEYS,findDuplicateSentence,parseStructuredSentenceMaterial}from'./sentence-parser.mjs';
+import{bindInteractiveEnglish,makeInteractiveText,sentenceAudioButton}from'./interactive-english.js';
 
 const $=s=>document.querySelector(s);
 const KEYS={sentence:'ky5_sentence',history:'ky5_sentence_history'};
@@ -100,6 +101,7 @@ const GPT_OUTPUT_TEMPLATE=[
 ].join('\\n');
 
 await loadVocabulary();
+bindInteractiveEnglish();
 
 const readJson=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}};
 const saveJson=(key,value)=>localStorage.setItem(key,JSON.stringify(value));
@@ -135,10 +137,16 @@ function clearForm(){
 }
 
 function markWords(text){
-  return esc(text).replace(/[A-Za-z]+(?:'[A-Za-z]+)?/g,word=>{
-    const x=findWord(word);
-    return`<span class="token ${x?.source||'unknown'}" data-word="${esc(word)}">${esc(word)}</span>`;
-  });
+  return makeInteractiveText(text);
+}
+
+function previewContent(key,value){
+  if(!value)return'未识别';
+  if(['originalSentence','readingOrder','chunks','mainClause','structureAnalysis','vocabulary','grammarNotes','fixedExpressions'].includes(key)){
+    const audio=key==='originalSentence'?sentenceAudioButton(value):'';
+    return`${audio}${makeInteractiveText(value)}`;
+  }
+  return esc(value).replace(/\n/g,'<br>');
 }
 
 function renderPreview(record=readForm()){
@@ -155,12 +163,12 @@ function renderPreview(record=readForm()){
     'masteryStatus'
   ];
   $('#previewPanel').classList.remove('hidden');
-  $('#previewPanel').innerHTML=`<h2>解析预览</h2>${sections.map(key=>`<section><strong>${FIELD_LABELS[key]}</strong><p>${record[key]?esc(record[key]).replace(/\n/g,'<br>'):'未识别'}</p></section>`).join('')}`;
+  $('#previewPanel').innerHTML=`<h2>解析预览</h2>${sections.map(key=>`<section><strong>${FIELD_LABELS[key]}</strong><p>${previewContent(key,record[key])}</p></section>`).join('')}`;
 }
 
 function renderSegments(record=readForm()){
   const chunkLines=lines(record.chunks).length?lines(record.chunks):[record.originalSentence].filter(Boolean);
-  $('#segments').innerHTML=chunkLines.length?chunkLines.map((text,index)=>`<p><strong>意群 ${index+1}</strong><br>${markWords(text.replace(/^[\-\u2022①-⑳]?\s*\d*[.)、]?\s*/,''))}</p>`).join(''):'<div class="empty">输入句子后开始分析</div>';
+  $('#segments').innerHTML=chunkLines.length?chunkLines.map((text,index)=>{const clean=text.replace(/^[\-\u2022①-⑳]?\s*\d*[.)、]?\s*/,'');return`<p><strong>意群 ${index+1}</strong>${sentenceAudioButton(clean)}<br>${markWords(clean)}</p>`}).join(''):'<div class="empty">输入句子后开始分析</div>';
 }
 
 function renderHistory(){

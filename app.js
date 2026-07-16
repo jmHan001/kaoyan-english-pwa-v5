@@ -5,6 +5,7 @@ import{stats}from'./stats.js';
 import{rootHint,keyPoint,nearWords}from'./knowledge.js';
 import{getSyncConfig,isConfigured,startAutoSync}from'./cloud-sync.js?v=5.6.5';
 import{buildChoiceOptions}from'./quiz-options.js';
+import{bindInteractiveEnglish,makeInteractiveText,sentenceAudioButton}from'./interactive-english.js';
 
 let pool,index=0,queue=[],reviewMode=false,currentOptions=[],answered=false,quiz=null,quizOptions=[],recentDistractors=[];
 const $=s=>document.querySelector(s),label={gaokao:'高考词',kaoyan:'考研词',both:'高考与考研共有'};
@@ -57,9 +58,9 @@ $('#phonetic').textContent='';
 renderChoices(w);
 $('#syllable').textContent=`拆着记：${chunks(w.word)}`;
 const examples=Array.isArray(w.sentences)?w.sentences:(w.sentences?.sentence?[w.sentences]:[]),phrases=Array.isArray(w.phrases)?w.phrases:(w.phrases?.phrase?[w.phrases]:[]),near=nearWords(w,allWords());
-$('#example').innerHTML=examples[0]?.sentence?examples[0].sentence.replace(new RegExp(`(${w.word})`,'ig'),'<strong>$1</strong>'):'暂无可靠例句。';
+$('#example').innerHTML=examples[0]?.sentence?`${sentenceAudioButton(examples[0].sentence)}${makeInteractiveText(examples[0].sentence,{highlight:[w.word]})}`:'暂无可靠例句。';
 $('#exampleCn').textContent=examples[0]?.translation||'';
-$('#wordKnowledge').innerHTML=`<div class="detail-grid"><section class="detail-section"><h3>高频考点</h3><p class="exam-point">${keyPoint(w)}</p></section><section class="detail-section"><h3>词组搭配</h3>${phrases.length?phrases.slice(0,4).map(p=>`<p><strong>${p.phrase}</strong>　${p.translation}</p>`).join(''):'<p>暂无搭配数据</p>'}</section><section class="detail-section"><h3>词根提示</h3><p>${rootHint(w.word)}</p></section><section class="detail-section"><h3>近义关联</h3><p>${near.length?near.map(x=>`<span class="chip">${x.word}</span>`).join(' '):'暂无可靠近义关联'}</p></section><section class="detail-section"><h3>更多例句</h3>${examples.slice(1,3).map(x=>`<p class="example">${x.sentence}</p><p class="example-cn">${x.translation||''}</p>`).join('')||'<p>暂无更多例句</p>'}</section></div>`}
+$('#wordKnowledge').innerHTML=`<div class="detail-grid"><section class="detail-section"><h3>高频考点</h3><p class="exam-point">${keyPoint(w)}</p></section><section class="detail-section"><h3>词组搭配</h3>${phrases.length?phrases.slice(0,4).map(p=>`<p><strong>${p.phrase}</strong>　${p.translation}</p>`).join(''):'<p>暂无搭配数据</p>'}</section><section class="detail-section"><h3>词根提示</h3><p>${rootHint(w.word)}</p></section><section class="detail-section"><h3>近义关联</h3><p>${near.length?near.map(x=>`<span class="chip">${x.word}</span>`).join(' '):'暂无可靠近义关联'}</p></section><section class="detail-section"><h3>更多例句</h3>${examples.slice(1,3).map(x=>`<p class="example">${sentenceAudioButton(x.sentence)}${makeInteractiveText(x.sentence,{highlight:[w.word]})}</p><p class="example-cn">${x.translation||''}</p>`).join('')||'<p>暂无更多例句</p>'}</section></div>`}
 function renderPool(){pool=getPool();
 renderAcceptance(renderTaskProgress());
 $('#poolList').innerHTML=pool.items.map(w=>{const x=findWord(w);
@@ -79,6 +80,7 @@ speechSynthesis.cancel();
 speechSynthesis.speak(u)}
 function finishChoice(correct,selectedIndex=-1){if(answered)return;const w=current();if(!w)return;answered=true;const record=rate(w.word,correct?3:1,w.source);if(!correct)queue.splice(Math.min(index+4,queue.length),0,w.word);if(!reviewMode){const completed=new Set(pool.completed||[]);if(correct)completed.add(w.word);else completed.delete(w.word);pool.completed=[...completed];localStorage.setItem('ky5_pool',JSON.stringify(pool));renderTaskProgress()}const buttons=[...document.querySelectorAll('.choice-option')];buttons.forEach((button,i)=>{button.disabled=true;if(currentOptions[i]?.word===w.word)button.classList.add('correct');else if(i===selectedIndex)button.classList.add('wrong')});$('#phonetic').textContent=`美 /${w.us||'暂无'}/　英 /${w.uk||'暂无'}/`;$('#memoryPack').classList.remove('hidden');$('#recallCue').classList.add('hidden');$('#reveal').classList.add('hidden');$('#nextWord').classList.remove('hidden');const feedback=$('#choiceFeedback');feedback.textContent=correct?(record.correctStreak>=3?'回答正确，已连续正确 3 次，标记为已掌握。':`回答正确，连续正确 ${record.correctStreak}/3。`):'本次未计入今日完成，连续正确已清零，并加入本轮回炉。';feedback.className=`choice-feedback ${correct?'correct':'wrong'}`;$('#memoryBadge').textContent=record.tailStage?'已连续正确 3 次':`连续正确 ${record.correctStreak||0}/3`;$('#memoryBadge').classList.toggle('tail',!!record.tailStage);renderStats()}
 async function init(){await loadVocabulary();
+bindInteractiveEnglish();
 const mig=migrateLegacy();
 const s=getSettings();
 $('#mode').value=s.mode;

@@ -1,0 +1,87 @@
+.interactive-token {
+  border: 0;
+  font: inherit;
+  line-height: inherit;
+  margin: 0 1px;
+  text-align: inherit;
+  vertical-align: baseline;
+}
+
+.interactive-token:focus-visible {
+  outline: 3px solid rgba(226,119,79,.35);
+  outline-offset: 2px;
+}
+
+.interactive-token.focus {
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.sentence-actions {
+  display: inline-flex;
+  gap: 6px;
+  margin: 0 8px 4px 0;
+  vertical-align: middle;
+}
+
+.mini-speak {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fffdf7;
+  color: var(--ink);
+  padding: 4px 8px;
+  font-family: ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size: .75rem;
+  font-weight: 750;
+}
+
+.mini-speak.ghost {
+  color: var(--muted);
+}
+
+.word-pop-card {
+  position: relative;
+}
+
+.word-pop-close {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+}
+
+.word-pop-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-right: 46px;
+}
+
+.word-pop-head h2 {
+  margin: 0;
+  font-size: clamp(2.2rem,10vw,4.4rem);
+  letter-spacing: -.06em;
+}
+
+.word-pop-section {
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+
+.word-pop-section strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.word-pop-section p {
+  margin: 0;
+  line-height: 1.7;
+}
+
+[data-theme="dark"] .mini-speak {
+  background: #2b3630;
+  color: #edf3ee;
+  border-color: #4a584f;
+}
