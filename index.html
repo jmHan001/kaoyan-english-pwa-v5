@@ -10,10 +10,10 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="memory.css">
 <link rel="stylesheet" href="enhancements.css">
-<link rel="stylesheet" href="choices.css?v=5.6.5">
+<link rel="stylesheet" href="choices.css?v=5.6.13">
 <link rel="stylesheet" href="interactive-english.css?v=5.6.11">
 <script src="theme.js" defer></script>
-<script type="module" src="app.js?v=5.6.12">
+<script type="module" src="app.js?v=5.6.13">
 </script>
 </head>
 <body>
@@ -57,6 +57,8 @@
 </select>
 <button class="btn secondary" id="poolBtn">编辑学习池</button>
 <button class="btn secondary" id="reviewBtn">到期复习</button>
+<button class="btn secondary" id="wrongBtn">错词回炉</button>
+<button class="btn secondary" id="favoriteBtn">重点词表</button>
 <button class="btn secondary" id="quizBtn">单词小测</button>
 <a class="sync-pill" id="syncStatus" href="sync.html">同步状态读取中</a>
 </div>
@@ -70,6 +72,7 @@
 </div>
 <div class="acceptance-panel" id="acceptancePanel" aria-live="polite"></div>
 <div class="card" id="card">
+<button class="favorite-toggle" id="favoriteToggle" type="button" aria-label="收藏重点单词" title="收藏重点单词">☆</button>
 <div>
 <p class="phonetic" id="source">
 </p>
@@ -111,6 +114,40 @@
 <input class="field" id="addWord" placeholder="输入词库中的单词">
 <button class="btn" id="addWordBtn">加入</button>
 </div>
+</div>
+</div>
+<div class="modal hidden" id="wrongModal">
+<div class="modal-card">
+<div class="toolbar">
+<div style="flex:1">
+<h2 style="margin:0">错词回炉</h2>
+<small id="wrongMeta">读取错词中</small>
+</div>
+<button class="iconbtn" id="closeWrong" aria-label="关闭">×</button>
+</div>
+<div class="notice" id="wrongHint">从所有错过的单词里随机抽取一组重温。</div>
+<div class="wrong-grid">
+<button class="btn secondary" data-wrong-count="10">随机 10 个</button>
+<button class="btn secondary" data-wrong-count="20">随机 20 个</button>
+<button class="btn secondary" data-wrong-count="50">随机 50 个</button>
+<button class="btn" data-wrong-count="all">全部错词</button>
+</div>
+<div class="list" id="wrongList"></div>
+</div>
+</div>
+<div class="modal hidden" id="favoriteModal">
+<div class="modal-card">
+<div class="toolbar">
+<div style="flex:1">
+<h2 style="margin:0">重点词表</h2>
+<small id="favoriteMeta">用户手动收藏的单词</small>
+</div>
+<button class="iconbtn" id="closeFavorite" aria-label="关闭">×</button>
+</div>
+<div class="toolbar">
+<button class="btn secondary" id="reviewFavorites">重点重温</button>
+</div>
+<div class="list" id="favoriteList"></div>
 </div>
 </div>
 <div class="modal hidden" id="quizModal">
