@@ -1,6 +1,7 @@
 import{findWord}from'./vocabulary-manager.js';
 import{add}from'./learning-pool.js';
-import{rootHint,speak}from'./knowledge.js';
+import{rootHint}from'./knowledge.js';
+import{playPronunciation as speak}from'./audio-engine.js?v=5.6.15';
 
 const esc=value=>String(value||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let activeWord='';

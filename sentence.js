@@ -1,7 +1,8 @@
 import{loadVocabulary,findWord}from'./vocabulary-manager.js';
 import{add}from'./learning-pool.js';
 import{FIELD_KEYS,findDuplicateSentence,parseStructuredSentenceMaterial}from'./sentence-parser.mjs';
-import{bindInteractiveEnglish,makeInteractiveText,sentenceAudioButton}from'./interactive-english.js';
+import{bindInteractiveEnglish,makeInteractiveText,sentenceAudioButton}from'./interactive-english.js?v=5.6.15';
+import{playPronunciation}from'./audio-engine.js?v=5.6.15';
 
 const $=s=>document.querySelector(s);
 const KEYS={sentence:'ky5_sentence',history:'ky5_sentence_history'};
@@ -337,10 +338,7 @@ document.addEventListener('click',e=>{
   }
   const lang=e.target.dataset.voice;
   if(lang){
-    const u=new SpeechSynthesisUtterance(selected);
-    u.lang=lang;
-    speechSynthesis.cancel();
-    speechSynthesis.speak(u);
+    playPronunciation(selected,lang);
   }
 });
 
