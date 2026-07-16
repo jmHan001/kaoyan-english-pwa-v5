@@ -23,6 +23,7 @@ function optionText(value){const text=String(value||'暂无释义').replace(/\s+
 function renderChoices(word){currentOptions=makeOptions(word);const wrap=$('#choices');wrap.innerHTML='';currentOptions.forEach((item,i)=>{const button=document.createElement('button');button.type='button';button.className='choice-option';button.dataset.choice=String(i);const key=document.createElement('span');key.className='choice-key';key.textContent=String.fromCharCode(65+i);const text=document.createElement('span');text.textContent=optionText(item.translation);button.append(key,text);wrap.append(button)})}
 function setPoolCompleted(word,done){if(!word)return;pool=getPool();const completed=new Set(pool.completed||[]);if(done)completed.add(word);else completed.delete(word);pool.completed=[...completed];localStorage.setItem('ky5_pool',JSON.stringify(pool));const task=renderTaskProgress();renderAcceptance(task);return task}
 function favoriteWords(){const state=getState();return Object.entries(state.records||{}).filter(([,record])=>record?.favorite).map(([word])=>word)}
+function learnedWords(){const state=getState();return Object.entries(state.records||{}).filter(([,record])=>record?.drawn||record?.lastSeen||record?.level||record?.errors||record?.favorite).sort((a,b)=>(b[1].lastSeen||0)-(a[1].lastSeen||0)).map(([word])=>word)}
 function setFavorite(word,value){if(!word)return;const state=getState(),item=findWord(word),old=state.records[word]||{};state.records[word]={...old,source:item?.source||old.source,drawn:old.drawn||!!item,favorite:!!value};saveState(state);updateFavoriteButton();renderFavoriteList()}
 function updateFavoriteButton(){const w=current(),button=$('#favoriteToggle');if(!button)return;if(!w){button.classList.add('hidden');return}const active=!!getState().records[w.word]?.favorite;button.classList.remove('hidden');button.classList.toggle('active',active);button.textContent=active?'★':'☆';button.title=active?'取消收藏重点单词':'收藏重点单词';button.setAttribute('aria-pressed',String(active))}
 function renderFavoriteList(){const wrap=$('#favoriteList');if(!wrap)return;const words=favoriteWords();$('#favoriteMeta').textContent=`已收藏 ${words.length} 个重点词`;wrap.innerHTML=words.length?words.map(word=>{const item=findWord(word),record=getState().records[word]||{};return`<div class="row"><div><strong>${word}</strong><small>${item?.translation||'当前词库未收录'} · 连续正确 ${record.correctStreak||0}/3</small></div><div class="row-actions"><button class="iconbtn" data-unfavorite="${word}" title="取消收藏">★</button></div></div>`}).join(''):'<div class="empty">还没有收藏。背词时点右上角星标加入重点词表。</div>'}
@@ -32,6 +33,10 @@ function openWrongModal(){renderWrongList();$('#wrongModal').classList.remove('h
 function startWordReview(words,message){queue=words.filter(word=>findWord(word));if(!queue.length){$('#reviewNotice').textContent=message||'没有可重温的单词。';$('#reviewNotice').classList.remove('hidden');return false}reviewMode=true;index=0;$('#reviewNotice').textContent=message||`本次打开 ${queue.length} 个单词。`;$('#reviewNotice').classList.remove('hidden');render();return true}
 function startWrongReview(count){const words=shuffle(wrongWords());const selected=count==='all'?words:words.slice(0,Math.max(1,Number(count)||10));$('#wrongModal').classList.add('hidden');startWordReview(selected,selected.length?`错词回炉：从全部 ${words.length} 个错词中随机打开 ${selected.length} 个。`:'暂无错词。答错后的词会自动进入错词回炉。')}
 function startFavoriteReview(){const words=shuffle(favoriteWords());$('#favoriteModal').classList.add('hidden');startWordReview(words,words.length?`重点词表：本次打开 ${words.length} 个收藏词。`:'重点词表为空。背词时点右上角星标加入。')}
+function renderLearnedList(){const wrap=$('#learnedList');if(!wrap)return;const words=learnedWords(),state=getState();$('#learnedMeta').textContent=`已背 ${words.length} 个单词`;wrap.innerHTML=words.length?words.slice(0,160).map(word=>{const item=findWord(word),record=state.records[word]||{};const status=record.tailStage?'已掌握':record.errors?'错过':record.drawn?'已抽到':'已记录';return`<div class="row"><div><strong>${word}</strong><small>${item?.translation||'当前词库未收录'} · ${status} · 连续正确 ${record.correctStreak||0}/3</small></div><div class="row-actions"><button class="iconbtn" data-toggle-favorite="${word}" title="收藏重点">${record.favorite?'★':'☆'}</button></div></div>`}).join(''):'<div class="empty">还没有已背记录。完成一次学习池后会出现在这里。</div>'}
+function openLearnedModal(){renderLearnedList();$('#learnedModal').classList.remove('hidden')}
+function startLearnedReview(){const words=shuffle(learnedWords());$('#learnedModal').classList.add('hidden');startWordReview(words,words.length?`已背重温：本次打开 ${words.length} 个已背单词。`:'还没有已背单词。先完成今日学习池。')}
+function goPreviousWord(){if(index<=0){$('#reviewNotice').textContent='已经是本组第一个单词。';$('#reviewNotice').classList.remove('hidden');return}index--;render();const card=$('#card');card.classList.remove('swipe-back');void card.offsetWidth;card.classList.add('swipe-back')}
 
 function renderStats(){const x=stats();
 $('#stats').innerHTML=`<div class="stat"><strong>${x.gaokao.rate}%</strong><span>高考掌握率 · ${x.gaokao.mastered}/${x.gaokao.total}</span></div><div class="stat"><strong>${x.kaoyan.rate}%</strong><span>考研掌握率 · ${x.kaoyan.mastered}/${x.kaoyan.total}</span></div><div class="stat"><strong>${x.due}</strong><span>到期复习</span></div><div class="stat"><strong>${x.streak} 天</strong><span>连续学习</span></div>`}
@@ -132,7 +137,7 @@ const choice=e.target.closest?.('[data-choice]');if(choice)finishChoice(currentO
 if(e.target.dataset.remove){remove(e.target.dataset.remove);
 renderPool()}if(e.target.dataset.replace){replace(e.target.dataset.replace);
 renderPool()}if(e.target.dataset.lock){toggleLock(e.target.dataset.lock);
-renderPool()}if(e.target.dataset.unfavorite){setFavorite(e.target.dataset.unfavorite,false)}});
+renderPool()}if(e.target.dataset.unfavorite){setFavorite(e.target.dataset.unfavorite,false)}if(e.target.dataset.toggleFavorite){setFavorite(e.target.dataset.toggleFavorite,!getState().records[e.target.dataset.toggleFavorite]?.favorite);renderLearnedList()}});
 $('#mode').onchange=$('#daily').onchange=()=>{saveSettings({mode:$('#mode').value,daily:Number($('#daily').value)});
 pool=getPool();
 $('#reviewNotice').textContent='设置已保存，将从下一个学习日生效。今日学习池保持固定，如需改动请使用“编辑学习池”。';
@@ -153,13 +158,19 @@ renderPool()};
 $('#reviewBtn').onclick=()=>startReview('due');
 $('#wrongBtn').onclick=openWrongModal;
 $('#favoriteBtn').onclick=openFavoriteModal;
+$('#learnedBtn').onclick=openLearnedModal;
 $('#favoriteToggle').onclick=()=>{const w=current();if(w)setFavorite(w.word,!getState().records[w.word]?.favorite)};
 $('#closeWrong').onclick=()=>$('#wrongModal').classList.add('hidden');
 $('#closeFavorite').onclick=()=>$('#favoriteModal').classList.add('hidden');
+$('#closeLearned').onclick=()=>$('#learnedModal').classList.add('hidden');
 $('#reviewFavorites').onclick=startFavoriteReview;
+$('#reviewLearned').onclick=startLearnedReview;
 document.addEventListener('click',e=>{const wrongCount=e.target.closest?.('[data-wrong-count]')?.dataset.wrongCount;if(wrongCount)startWrongReview(wrongCount)});
 $('#quizBtn').onclick=()=>startQuiz();
 $('#closeQuiz').onclick=()=>{$('#quizModal').classList.add('hidden');quiz=null};
+let touchStartX=0,touchStartY=0,touchStartAt=0;
+$('#card').addEventListener('touchstart',e=>{const t=e.changedTouches?.[0];if(!t)return;touchStartX=t.clientX;touchStartY=t.clientY;touchStartAt=Date.now()},{passive:true});
+$('#card').addEventListener('touchend',e=>{const t=e.changedTouches?.[0];if(!t)return;const dx=t.clientX-touchStartX,dy=t.clientY-touchStartY,dt=Date.now()-touchStartAt;if(dx>70&&Math.abs(dy)<55&&dt<800)goPreviousWord()},{passive:true});
 init();
 startAutoSync((status,error)=>{
 renderSyncStatus(status,error);

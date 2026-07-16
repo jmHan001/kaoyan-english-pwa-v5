@@ -10,10 +10,10 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="memory.css">
 <link rel="stylesheet" href="enhancements.css">
-<link rel="stylesheet" href="choices.css?v=5.6.13">
+<link rel="stylesheet" href="choices.css?v=5.6.14">
 <link rel="stylesheet" href="interactive-english.css?v=5.6.11">
 <script src="theme.js" defer></script>
-<script type="module" src="app.js?v=5.6.13">
+<script type="module" src="app.js?v=5.6.14">
 </script>
 </head>
 <body>
@@ -59,6 +59,7 @@
 <button class="btn secondary" id="reviewBtn">到期复习</button>
 <button class="btn secondary" id="wrongBtn">错词回炉</button>
 <button class="btn secondary" id="favoriteBtn">重点词表</button>
+<button class="btn secondary" id="learnedBtn">已背单词</button>
 <button class="btn secondary" id="quizBtn">单词小测</button>
 <a class="sync-pill" id="syncStatus" href="sync.html">同步状态读取中</a>
 </div>
@@ -78,6 +79,7 @@
 </p>
 <div class="word-line"><h2 class="word" id="word">加载中</h2><span class="memory-badge" id="memoryBadge">连续正确 0/3</span></div>
 <div class="recall-cue" id="recallCue">先回忆，再选择正确的中文释义</div>
+<div class="swipe-cue" id="swipeCue">右滑回到上一个单词</div>
 <p class="phonetic" id="phonetic"></p>
 <div class="choice-grid" id="choices" aria-label="中文释义选项"></div>
 <div class="choice-feedback hidden" id="choiceFeedback" aria-live="polite"></div>
@@ -148,6 +150,21 @@
 <button class="btn secondary" id="reviewFavorites">重点重温</button>
 </div>
 <div class="list" id="favoriteList"></div>
+</div>
+</div>
+<div class="modal hidden" id="learnedModal">
+<div class="modal-card">
+<div class="toolbar">
+<div style="flex:1">
+<h2 style="margin:0">已背单词</h2>
+<small id="learnedMeta">读取学习历史中</small>
+</div>
+<button class="iconbtn" id="closeLearned" aria-label="关闭">×</button>
+</div>
+<div class="toolbar">
+<button class="btn secondary" id="reviewLearned">已背重温</button>
+</div>
+<div class="list" id="learnedList"></div>
 </div>
 </div>
 <div class="modal hidden" id="quizModal">
