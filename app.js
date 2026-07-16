@@ -6,7 +6,7 @@ import{rootHint,keyPoint,nearWords}from'./knowledge.js';
 import{getSyncConfig,isConfigured,startAutoSync}from'./cloud-sync.js?v=5.6.5';
 import{buildChoiceOptions}from'./quiz-options.js';
 
-let pool,index=0,queue=[],reviewMode=false,currentOptions=[],answered=false,quiz=null,quizOptions=[];
+let pool,index=0,queue=[],reviewMode=false,currentOptions=[],answered=false,quiz=null,quizOptions=[],recentDistractors=[];
 const $=s=>document.querySelector(s),label={gaokao:'高考词',kaoyan:'考研词',both:'高考与考研共有'};
 const readJson=(key,fallback=null)=>{try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}};
 const formatTime=value=>value?new Date(value).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'尚未同步';
@@ -14,9 +14,10 @@ const today=()=>new Date().toISOString().slice(0,10);
 
 function shuffle(a){a=[...a];for(let i=a.length-1;i;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function wordsFromList(words){const seen=new Set(),items=[];for(const word of words||[]){const item=typeof word==='string'?findWord(word):word;if(item&&!seen.has(item.word)){seen.add(item.word);items.push(item)}}return items}
+function learnedOptionWords(){const state=getState();return wordsFromList(Object.entries(state.records||{}).filter(([,record])=>record?.drawn||record?.lastSeen||record?.level||record?.errors).map(([word])=>word))}
 function poolOptionWords(){const p=pool||getPool();return wordsFromList(p?.items||[])}
 function reviewOptionWords(){return wordsFromList([...wrongWords(),...dueWords()])}
-function makeOptions(word){return buildChoiceOptions(word,[poolOptionWords(),reviewOptionWords()],allWords())}
+function makeOptions(word){const options=buildChoiceOptions(word,[learnedOptionWords(),poolOptionWords(),reviewOptionWords()],allWords(),4,Math.random,recentDistractors);recentDistractors=[...options.filter(item=>item?.word!==word.word).map(item=>item.word),...recentDistractors].slice(0,12);return options}
 function optionText(value){const text=String(value||'暂无释义').replace(/\s+/g,' ').trim();return text.length>82?`${text.slice(0,82)}…`:text}
 function renderChoices(word){currentOptions=makeOptions(word);const wrap=$('#choices');wrap.innerHTML='';currentOptions.forEach((item,i)=>{const button=document.createElement('button');button.type='button';button.className='choice-option';button.dataset.choice=String(i);const key=document.createElement('span');key.className='choice-key';key.textContent=String.fromCharCode(65+i);const text=document.createElement('span');text.textContent=optionText(item.translation);button.append(key,text);wrap.append(button)})}
 

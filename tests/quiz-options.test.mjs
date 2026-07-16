@@ -49,4 +49,32 @@ const fallback=[
   assert.deepEqual(new Set(words),new Set(['abandon','culture','economy']));
 }
 
+{
+  const learned=[
+    {word:'alpha',translation:'n. 甲'},
+    {word:'bravo',translation:'n. 乙'},
+    {word:'charlie',translation:'n. 丙'},
+    {word:'delta',translation:'n. 丁'}
+  ];
+  const options=buildChoiceOptions(answer,[learned],fallback,4,()=>0);
+  const distractors=options.filter(x=>x.word!=='abandon').map(x=>x.word);
+  assert.deepEqual(new Set(distractors),new Set(['bravo','charlie','delta']));
+}
+
+{
+  const learned=[
+    {word:'alpha',translation:'n. 甲'},
+    {word:'bravo',translation:'n. 乙'},
+    {word:'charlie',translation:'n. 丙'},
+    {word:'delta',translation:'n. 丁'},
+    {word:'echo',translation:'n. 戊'},
+    {word:'foxtrot',translation:'n. 己'}
+  ];
+  const options=buildChoiceOptions(answer,[learned],fallback,4,()=>0,['alpha','bravo','charlie']);
+  const distractors=options.filter(x=>x.word!=='abandon').map(x=>x.word);
+  assert(!distractors.includes('alpha'));
+  assert(!distractors.includes('bravo'));
+  assert(!distractors.includes('charlie'));
+}
+
 console.log('quiz-options tests passed');

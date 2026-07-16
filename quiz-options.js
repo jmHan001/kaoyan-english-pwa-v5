@@ -8,11 +8,12 @@ function translationKey(item){
   return normalizeText(item?.translation).toLowerCase();
 }
 
-function addDistractors(target,picked,seenWords,seenTranslations,items){
+function addDistractors(target,picked,seenWords,seenTranslations,items,blockedWords=new Set()){
   for(const item of items||[]){
     if(picked.length>=target)break;
     const wordKey=optionKey(item),meaningKey=translationKey(item);
     if(!item||!wordKey||!meaningKey)continue;
+    if(blockedWords.has(wordKey))continue;
     if(seenWords.has(wordKey)||seenTranslations.has(meaningKey))continue;
     seenWords.add(wordKey);
     seenTranslations.add(meaningKey);
@@ -29,14 +30,27 @@ export function shuffleOptions(items,random=Math.random){
   return a;
 }
 
-export function buildChoiceOptions(answer,preferredGroups=[],fallbackItems=[],limit=4,random=Math.random){
+function blockedSet(words){
+  return new Set((words||[]).map(word=>normalizeText(word).toLowerCase()).filter(Boolean));
+}
+
+export function buildChoiceOptions(answer,preferredGroups=[],fallbackItems=[],limit=4,random=Math.random,recentWords=[]){
   const picked=[];
   const seenWords=new Set([optionKey(answer)].filter(Boolean));
   const seenTranslations=new Set([translationKey(answer)].filter(Boolean));
   const target=Math.max(0,limit-1);
-  for(const group of preferredGroups){
-    addDistractors(target,picked,seenWords,seenTranslations,group);
+  const blocked=blockedSet(recentWords);
+  const groups=preferredGroups.map(group=>shuffleOptions(group||[],random));
+  const fallback=shuffleOptions(fallbackItems||[],random);
+  for(const group of groups){
+    addDistractors(target,picked,seenWords,seenTranslations,group,blocked);
   }
-  addDistractors(target,picked,seenWords,seenTranslations,fallbackItems);
+  addDistractors(target,picked,seenWords,seenTranslations,fallback,blocked);
+  if(picked.length<target){
+    for(const group of groups){
+      addDistractors(target,picked,seenWords,seenTranslations,group);
+    }
+    addDistractors(target,picked,seenWords,seenTranslations,fallback);
+  }
   return shuffleOptions([answer,...picked],random);
 }
