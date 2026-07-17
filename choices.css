@@ -71,6 +71,47 @@
   box-shadow: var(--shadow);
 }
 .card { position: relative; }
+.study-page {
+  background:
+    radial-gradient(circle at top left, rgba(226,119,79,.16), transparent 34rem),
+    var(--bg);
+}
+.study-shell {
+  width: min(100% - 28px, 1120px);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: max(18px, env(safe-area-inset-top)) 0 max(22px, env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 16px;
+}
+.study-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.study-top h1 {
+  margin: 0;
+  font-size: clamp(2rem, 7vw, 4.8rem);
+  line-height: .95;
+  letter-spacing: -.065em;
+}
+.study-card {
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  align-content: center;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: var(--paper);
+  box-shadow: 0 18px 60px rgba(38,56,45,.12);
+}
+.study-actions {
+  justify-content: center;
+  margin-top: 22px;
+}
 .favorite-toggle {
   position: absolute;
   top: 14px;

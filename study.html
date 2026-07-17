@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#26382d">
+<title>拾词 · 背单词</title>
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="memory.css">
+<link rel="stylesheet" href="enhancements.css">
+<link rel="stylesheet" href="choices.css?v=5.6.19">
+<link rel="stylesheet" href="interactive-english.css?v=5.6.17">
+<script src="theme.js" defer></script>
+</head>
+<body class="study-page">
+<main class="study-shell">
+<header class="study-top">
+<div>
+<span class="section-kicker" id="studyMode">今日背词</span>
+<h1>专心背词</h1>
+</div>
+<a class="btn secondary" href="index.html" id="backHome">回主页</a>
+</header>
+<section class="study-card card" id="card">
+<button class="favorite-toggle" id="favoriteToggle" type="button" aria-label="收藏重点单词" title="收藏重点单词">☆</button>
+<div>
+<p class="phonetic" id="source"></p>
+<div class="word-line"><h2 class="word" id="word">加载中</h2><span class="memory-badge" id="memoryBadge">连续正确 0/3</span></div>
+<div class="recall-cue" id="recallCue">先回忆，再选择正确的中文释义</div>
+<div class="swipe-cue" id="swipeCue">右滑回到上一个单词</div>
+<p class="phonetic" id="phonetic"></p>
+<div class="choice-grid" id="choices" aria-label="中文释义选项"></div>
+<div class="choice-feedback hidden" id="choiceFeedback" aria-live="polite"></div>
+<div class="memory-pack hidden" id="memoryPack">
+  <p class="meaning" id="meaning"></p>
+  <p class="syllable" id="syllable"></p>
+  <p class="example" id="example"></p>
+  <p class="example-cn" id="exampleCn"></p>
+  <div id="wordKnowledge"></div>
+</div>
+<div class="toolbar study-actions">
+<button class="btn secondary" data-voice="en-US">美音</button>
+<button class="btn secondary" data-voice="en-GB">英音</button>
+<button class="btn secondary" id="reveal">不会，显示答案</button>
+<button class="btn hidden" id="nextWord">下一词</button>
+</div>
+</div>
+</section>
+<div class="notice hidden" id="studyNotice"></div>
+</main>
+<script type="module" src="study.js?v=5.6.19"></script>
+</body>
+</html>

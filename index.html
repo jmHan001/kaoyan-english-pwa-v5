@@ -10,10 +10,10 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="memory.css">
 <link rel="stylesheet" href="enhancements.css">
-<link rel="stylesheet" href="choices.css?v=5.6.18">
+<link rel="stylesheet" href="choices.css?v=5.6.19">
 <link rel="stylesheet" href="interactive-english.css?v=5.6.17">
 <script src="theme.js" defer></script>
-<script type="module" src="app.js?v=5.6.18">
+<script type="module" src="app.js?v=5.6.19">
 </script>
 </head>
 <body>
@@ -69,42 +69,10 @@
 <strong id="todayCount">0 / 0</strong>
 <small id="todayRemaining">正在读取学习池</small>
 </div>
-<button class="btn accent today-start" type="button" data-home-action="today">今日背词</button>
+<a class="btn accent today-start" href="study.html?mode=today">今日背词</a>
 <progress id="todayProgress" value="0" max="1" aria-label="今日任务完成进度"></progress>
 </div>
 <div class="acceptance-panel" id="acceptancePanel" aria-live="polite"></div>
-<div class="study-window hidden" id="studyWindow" aria-modal="true" role="dialog" aria-label="背单词窗口">
-<div class="study-window-head">
-<strong id="studyTitle">今日背词</strong>
-<button class="iconbtn" id="closeStudy" type="button" aria-label="回到主页">×</button>
-</div>
-<div class="card" id="card">
-<button class="favorite-toggle" id="favoriteToggle" type="button" aria-label="收藏重点单词" title="收藏重点单词">☆</button>
-<div>
-<p class="phonetic" id="source">
-</p>
-<div class="word-line"><h2 class="word" id="word">加载中</h2><span class="memory-badge" id="memoryBadge">连续正确 0/3</span></div>
-<div class="recall-cue" id="recallCue">先回忆，再选择正确的中文释义</div>
-<div class="swipe-cue" id="swipeCue">右滑回到上一个单词</div>
-<p class="phonetic" id="phonetic"></p>
-<div class="choice-grid" id="choices" aria-label="中文释义选项"></div>
-<div class="choice-feedback hidden" id="choiceFeedback" aria-live="polite"></div>
-<div class="memory-pack hidden" id="memoryPack">
-  <p class="meaning" id="meaning"></p>
-  <p class="syllable" id="syllable"></p>
-  <p class="example" id="example"></p>
-  <p class="example-cn" id="exampleCn"></p>
-  <div id="wordKnowledge"></div>
-</div>
-<div class="toolbar" style="justify-content:center;margin-top:22px">
-<button class="btn secondary" data-voice="en-US">美音</button>
-<button class="btn secondary" data-voice="en-GB">英音</button>
-<button class="btn secondary" id="reveal">不会，显示答案</button>
-<button class="btn hidden" id="nextWord">下一词</button>
-</div>
-</div>
-</div>
-</div>
 <div class="notice hidden" id="done">今天的新词已完成。可以进入到期复习，或编辑学习池。</div>
 <div class="notice hidden" id="reviewNotice"></div>
 <div class="after-task hidden" id="afterTask" aria-live="polite"></div>
