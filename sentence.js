@@ -14,7 +14,7 @@ const FIELD_LABELS={
   chunks:'意群切分',
   vocabulary:'核心词汇',
   mainClause:'句子主干',
-  structureAnalysis:'句子结构',
+  structureAnalysis:'结构分析',
   translation:'参考翻译',
   grammarNotes:'语法笔记',
   fixedExpressions:'固定搭配',
@@ -26,16 +26,18 @@ const FIELD_LABELS={
 let selected='',pendingImport=null,pendingDuplicate=null;
 
 const GPT_OUTPUT_TEMPLATE=[
-  '请把我接下来提供的英语长难句，严格按下面的课堂学习顺序分析。',
+  '请把我接下来提供的英语长难句，整理成【拾词】网页可以一键导入的格式。',
   '',
-  '要求：',
-  '1. 只输出【网页长难句资料】区块，不要解释、前言、Markdown 代码块或额外标题。',
-  '2. 字段必须按下面顺序输出；不要改变英文原句的拼写、标点或大小写。',
-  '3. 【阅读顺序】按阅读推进顺序编号，每行保留英文短语，并用“ = ”写中文理解。',
-  '4. 【意群切分】只切分英文原句，按 1.、2.、3. 编号，不翻译、不改写。',
-  '5. 【句子主干】写主语、谓语、宾语或表语；没有宾语时如实说明。',
-  '6. 【句子结构】只分析真实存在的结构，不要猜测或补造。',
-  '7. 无法确定的字段写“未识别”；【毕业测试】写“未测试”；【掌握状态】写“not_started”。',
+  '硬性要求：',
+  '1. 只输出【网页长难句资料】这一个区块，不要前言、解释、Markdown 代码块或额外标题。',
+  '2. 字段必须严格按下面顺序输出：句子编号 → 来源 → 原句 → 阅读顺序 → 意群切分 → 句子主干 → 结构分析 → 核心词汇 → 参考翻译 → 语法笔记 → 固定搭配 → 个人易错点 → 毕业测试 → 掌握状态。',
+  '3. 不要改变英文原句的拼写、标点、大小写。',
+  '4. 【阅读顺序】按课堂阅读推进顺序编号，每行保留英文片段，并用“ = ”写中文理解。',
+  '5. 【意群切分】只切分英文原句，按 1.、2.、3. 编号，不翻译、不改写。',
+  '6. 【句子主干】只写核心主干：主语 + 谓语 + 宾语/表语/补语；没有宾语时如实说明。',
+  '7. 【结构分析】只分析真实存在的结构，不要猜测、不要补造。',
+  '8. 无法确定的字段写“未识别”；【毕业测试】写“未测试”；【掌握状态】写“not_started”。',
+  '9. 个人易错点如果我没有提供，就按模板写“未填写”，不要替我编造个人错误。',
   '',
   '【网页长难句资料】',
   '',
@@ -61,7 +63,7 @@ const GPT_OUTPUT_TEMPLATE=[
   '【句子主干】',
   '主语 + 谓语 + 宾语/表语',
   '',
-  '【句子结构】',
+  '【结构分析】',
   '- 结构名称：对应英文部分 + 作用说明',
   '- 结构名称：对应英文部分 + 作用说明',
   '',
@@ -242,7 +244,7 @@ async function importClipboard(){
 async function copyGptTemplate(){
   try{
     await navigator.clipboard.writeText(GPT_OUTPUT_TEMPLATE);
-    showNotice('已复制 GPT 输出模板。把它发给 GPT，再补上原句；收到结果后复制并点击“从剪贴板导入”。');
+    showNotice('已复制 GPT 一键指令。把它发给 GPT，再补上原句；收到结果后复制整段并点击“从剪贴板导入”。');
   }catch{
     showNotice('无法写入剪贴板。请允许浏览器剪贴板权限后重试。','warn');
   }
@@ -267,6 +269,7 @@ $('#openSavedSentences').onclick=()=>{$('#savedSentencesModal').classList.remove
 $('#closeSavedSentences').onclick=()=>$('#savedSentencesModal').classList.add('hidden');
 $('#clearImport').onclick=clearForm;
 $('#copyGptTemplate').onclick=copyGptTemplate;
+$('#copyGptGuide').onclick=copyGptTemplate;
 $('#previewImport').onclick=()=>{const record=readForm();renderPreview(record);renderSegments(record)};
 $('#saveAnalysis').onclick=saveAnalysis;
 $('#sample').onclick=()=>{
@@ -298,7 +301,7 @@ When the work is well done, a climate of accident-free operations is established
 【句子主干】
 a climate is established
 
-【句子结构】
+【结构分析】
 - 时间状语：When the work is well done
 - 定语从句：where time lost due to injuries is kept at a minimum
 - 过去分词短语：lost due to injuries
@@ -384,6 +387,7 @@ $('#add').onclick=()=>{add(selected);$('#modal').classList.add('hidden')};
 
 const last=localStorage.getItem(KEYS.sentence);
 if(last)$('#originalSentence').value=last;
+$('#gptPromptBox').value=GPT_OUTPUT_TEMPLATE;
 renderPreview(readForm());
 renderSegments(readForm());
 renderHistory();

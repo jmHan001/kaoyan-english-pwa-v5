@@ -5,6 +5,7 @@ export const FIELD_MAP={
   '阅读顺序':'readingOrder',
   '意群切分':'chunks',
   '句子主干':'mainClause',
+  '结构分析':'structureAnalysis',
   '句子结构':'structureAnalysis',
   '核心词汇':'vocabulary',
   '参考翻译':'translation',
@@ -17,7 +18,7 @@ export const FIELD_MAP={
 
 // Keep the array in classroom-learning order. The parser itself remains
 // order-independent, so older clipboard content is still accepted.
-export const FIELD_KEYS=Object.values(FIELD_MAP);
+export const FIELD_KEYS=[...new Set(Object.values(FIELD_MAP))];
 
 const BLOCK_TITLE='网页长难句资料';
 const FIELD_PATTERN=/^【([^】]+)】\s*$/;

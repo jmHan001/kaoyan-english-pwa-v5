@@ -75,6 +75,22 @@ completed`;
 {
   const parsed=parseStructuredSentenceMaterial(`【网页长难句资料】
 【原句】
+The sentence that students saved should follow the classroom order.
+【阅读顺序】
+1. The sentence = 这个句子
+【意群切分】
+1. The sentence
+2. that students saved
+【句子主干】
+The sentence should follow the order
+【结构分析】
+- 定语从句：that students saved 修饰 sentence`);
+  assert.match(parsed.record.structureAnalysis,/定语从句/);
+}
+
+{
+  const parsed=parseStructuredSentenceMaterial(`【网页长难句资料】
+【原句】
 This is a long enough sentence that should still be imported even when several fields are missing.
 【参考翻译】
 这是译文。`);
