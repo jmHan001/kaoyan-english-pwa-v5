@@ -1,5 +1,5 @@
 import{loadVocabulary,findWord,allWords,getSettings,saveSettings,getState,saveState,migrateLegacy,exportAll}from'./vocabulary-manager.js';
-import{getPool,remove,replace,toggleLock,add,fill,extend}from'./learning-pool.js';
+import{getPool,remove,replace,toggleLock,add,fill,resize,extend}from'./learning-pool.js';
 import{rate,dueWords,wrongWords}from'./review-manager.js';
 import{stats}from'./stats.js';
 import{rootHint,keyPoint,nearWords}from'./knowledge.js?v=5.6.17';
@@ -100,7 +100,7 @@ bindInteractiveEnglish();
 const mig=migrateLegacy();
 const s=getSettings();
 $('#mode').value=s.mode;
-$('#daily').value=String(s.daily);
+ensureDailyOption(s.daily);
 pool=getPool();
 const verifiedCompleted=pool.completed.filter(word=>{const record=getState().records[word]||{};return record.tailStage||record.correctStreak>=3||record.level>=4});
 if(verifiedCompleted.length!==pool.completed.length){pool.completed=verifiedCompleted;localStorage.setItem('ky5_pool',JSON.stringify(pool))}
@@ -141,11 +141,9 @@ if(e.target.dataset.remove){remove(e.target.dataset.remove);
 renderPool()}if(e.target.dataset.replace){replace(e.target.dataset.replace);
 renderPool()}if(e.target.dataset.lock){toggleLock(e.target.dataset.lock);
 renderPool()}if(e.target.dataset.unfavorite){setFavorite(e.target.dataset.unfavorite,false)}if(e.target.dataset.toggleFavorite){setFavorite(e.target.dataset.toggleFavorite,!getState().records[e.target.dataset.toggleFavorite]?.favorite);renderLearnedList()}});
-$('#mode').onchange=$('#daily').onchange=()=>{saveSettings({mode:$('#mode').value,daily:Number($('#daily').value)});
-pool=getPool();
-$('#reviewNotice').textContent='设置已保存，将从下一个学习日生效。今日学习池保持固定，如需改动请使用“编辑学习池”。';
-$('#reviewNotice').classList.remove('hidden');
-renderStats();renderAcceptance()};
+function ensureDailyOption(value){const select=$('#daily'),text=String(value);if(![...select.options].some(o=>o.value===text||o.textContent===text)){const option=document.createElement('option');option.value=text;option.textContent=text;select.insertBefore(option,select.querySelector('[value="custom"]'))}select.value=text}
+function selectedDaily(){let value=$('#daily').value;if(value==='custom'){const previous=getSettings().daily||20,input=prompt('今天想背多少个单词？请输入 1-300 的数字',String(previous));if(input===null||input===''){ensureDailyOption(previous);return previous}const n=Math.max(1,Math.min(300,Math.floor(Number(input)||previous)));ensureDailyOption(n);value=String(n)}return Math.max(1,Math.min(300,Math.floor(Number(value)||20)))}
+$('#mode').onchange=$('#daily').onchange=()=>{const daily=selectedDaily();saveSettings({mode:$('#mode').value,daily});pool=resize(daily);const task=renderTaskProgress();$('#reviewNotice').textContent=`已同步今日任务：当前 ${task.done}/${task.total} 个。点“今日背词”进入独立背词页。`;$('#reviewNotice').classList.remove('hidden');renderStats();renderAcceptance(task)};
 $('#poolBtn').onclick=()=>{renderPool();
 $('#poolModal').classList.remove('hidden')};
 $('#closePool').onclick=()=>{$('#poolModal').classList.add('hidden');
