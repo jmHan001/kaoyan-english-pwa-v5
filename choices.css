@@ -37,6 +37,39 @@
 .choice-feedback.correct { background: #e7f1e9; color: #315b42; }
 .choice-feedback.wrong { background: #f7e3df; color: #8b4038; }
 
+.study-window {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 12px;
+  padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
+  background: var(--bg);
+}
+.study-window-head {
+  width: min(100%, 900px);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.study-window-head strong {
+  font-size: 1.05rem;
+  letter-spacing: -.02em;
+}
+.study-window .card {
+  width: min(100%, 900px);
+  min-height: 0;
+  height: 100%;
+  margin: 0 auto;
+  overflow: auto;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+}
 .card { position: relative; }
 .favorite-toggle {
   position: absolute;

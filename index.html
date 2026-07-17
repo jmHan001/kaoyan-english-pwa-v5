@@ -10,10 +10,10 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="memory.css">
 <link rel="stylesheet" href="enhancements.css">
-<link rel="stylesheet" href="choices.css?v=5.6.17">
+<link rel="stylesheet" href="choices.css?v=5.6.18">
 <link rel="stylesheet" href="interactive-english.css?v=5.6.17">
 <script src="theme.js" defer></script>
-<script type="module" src="app.js?v=5.6.17">
+<script type="module" src="app.js?v=5.6.18">
 </script>
 </head>
 <body>
@@ -73,6 +73,11 @@
 <progress id="todayProgress" value="0" max="1" aria-label="今日任务完成进度"></progress>
 </div>
 <div class="acceptance-panel" id="acceptancePanel" aria-live="polite"></div>
+<div class="study-window hidden" id="studyWindow" aria-modal="true" role="dialog" aria-label="背单词窗口">
+<div class="study-window-head">
+<strong id="studyTitle">今日背词</strong>
+<button class="iconbtn" id="closeStudy" type="button" aria-label="回到主页">×</button>
+</div>
 <div class="card" id="card">
 <button class="favorite-toggle" id="favoriteToggle" type="button" aria-label="收藏重点单词" title="收藏重点单词">☆</button>
 <div>
@@ -96,6 +101,7 @@
 <button class="btn secondary" data-voice="en-GB">英音</button>
 <button class="btn secondary" id="reveal">不会，显示答案</button>
 <button class="btn hidden" id="nextWord">下一词</button>
+</div>
 </div>
 </div>
 </div>

@@ -1,4 +1,4 @@
-const CACHE='shici-v5.6.17-word-audio-task';
+const CACHE='shici-v5.6.18-study-window';
 const ASSETS=['./','./index.html','./styles.css','./memory.css','./enhancements.css','./choices.css','./interactive-english.css','./theme.js','./knowledge.js','./audio-engine.js','./app.js','./quiz-options.js','./interactive-english.js','./vocabulary-manager.js','./learning-pool.js','./review-manager.js','./stats.js','./cloud-sync.js','./sync.html','./sync.css','./sync-page.js','./vocabulary.html','./sentence.html','./sentence.js','./sentence-parser.mjs','./reading.html','./reading.js','./lookup.html','./lookup.js','./exam.html','./exam.js','./manifest.webmanifest','./icons/icon.svg','./data/gaokao.json','./data/kaoyan.json','./data/SOURCE.md'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(async c=>{for(const u of ASSETS){try{const r=await fetch(u,{cache:'reload'});
 if(r.ok)await c.put(u,r)}catch{}}}).then(()=>self.skipWaiting())));
