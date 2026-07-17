@@ -100,6 +100,26 @@ const synonymGroups=[
   ['various','different','diverse']
 ];
 const stopWords=new Set(['人名','名词','动词','形容词','副词','介词','连词','代词','缩写','表示','用于','东西','事情','一种','一个','某人','某事','进行','使','有','的','地','得']);
+const translationOverrides={
+  rich:'adj. 富有的；丰富的；肥沃的；油腻的；n. 富人',
+  abundant:'adj. 丰富的；充裕的；大量的',
+  ample:'adj. 足够的；充裕的；宽敞的',
+  plentiful:'adj. 丰富的；充足的；大量的',
+  wealthy:'adj. 富有的；富裕的；n. 富人'
+};
+
+export function cleanTranslation(wordOrItem,text){
+  const word=cleanWord(typeof wordOrItem==='string'?wordOrItem:wordOrItem?.word);
+  if(translationOverrides[word])return translationOverrides[word];
+  return String((text??(typeof wordOrItem==='object'?wordOrItem?.translation:''))||'暂无释义')
+    .replace(/\s+/g,' ')
+    .replace(/；?\s*n\.\s*[（(][^）)]*[）)][^；;]*/g,'')
+    .replace(/；?\s*[（(][^）)]*人名[^）)]*[）)]/g,'')
+    .replace(/；?\s*人名[^；;]*/g,'')
+    .replace(/；{2,}/g,'；')
+    .replace(/^；|；$/g,'')
+    .trim()||'暂无释义';
+}
 
 export function rootHint(word){
   const w=word.toLowerCase(),hits=[];
@@ -109,7 +129,7 @@ export function rootHint(word){
 }
 
 export function keyPoint(word){
-  const parts=(word.translation||'').split('；').filter(Boolean);
+  const parts=cleanTranslation(word).split('；').filter(Boolean);
   return parts.slice(0,3).map((x,i)=>i===0?`<strong><u>${x}</u></strong>`:`<strong>${x}</strong>`).join('；')
 }
 
@@ -135,16 +155,16 @@ function groupMatches(word,candidate){
 
 export function nearWords(word,all){
   if(!word?.word)return[];
-  const w=cleanWord(word.word),main=primarySense(word.translation),tokens=senseTokens(word.translation);
+  const w=cleanWord(word.word),main=primarySense(cleanTranslation(word)),tokens=senseTokens(cleanTranslation(word));
   const scored=[];
   for(const item of all){
     if(item.word===word.word)continue;
     const candidate=cleanWord(item.word);
     let score=0,reason='';
     if(groupMatches(w,candidate)){score+=9;reason='常见近义词组'}
-    const candidateMain=primarySense(item.translation);
+    const candidateMain=primarySense(cleanTranslation(item));
     if(main&&candidateMain&&main===candidateMain){score+=5;reason=reason||`核心义同为“${main}”`}
-    const overlap=tokens.filter(t=>senseTokens(item.translation).includes(t));
+    const overlap=tokens.filter(t=>senseTokens(cleanTranslation(item)).includes(t));
     if(overlap.length&&tokens.length<=5){score+=Math.min(2,overlap.length);reason=reason||`释义相关：${overlap.slice(0,2).join('、')}`}
     if(score>=5)scored.push({...item,relatedReason:reason,relatedScore:score});
   }

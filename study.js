@@ -1,16 +1,18 @@
 import{loadVocabulary,findWord,allWords,getState,saveState}from'./vocabulary-manager.js';
 import{getPool}from'./learning-pool.js';
 import{rate,dueWords,wrongWords}from'./review-manager.js';
-import{rootHint,keyPoint,nearWords}from'./knowledge.js?v=5.6.17';
+import{rootHint,keyPoint,nearWords,cleanTranslation}from'./knowledge.js?v=5.6.21';
 import{buildChoiceOptions}from'./quiz-options.js';
 import{bindInteractiveEnglish,makeInteractiveText,sentenceAudioButton}from'./interactive-english.js?v=5.6.17';
 import{playPronunciation}from'./audio-engine.js?v=5.6.17';
 
 const $=s=>document.querySelector(s),label={gaokao:'高考词',kaoyan:'考研词',both:'高考与考研共有'};
 let pool,queue=[],index=0,currentOptions=[],recentDistractors=[],answered=false,reviewMode=false;
+const reviewOnlyIndexes=new Set();
 
 const params=new URLSearchParams(location.search);
 const mode=params.get('mode')||'today';
+const today=()=>new Date().toISOString().slice(0,10);
 const shuffle=a=>{a=[...a];for(let i=a.length-1;i;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function current(){return findWord(queue[index])}
 function wordsFromList(words){const seen=new Set(),items=[];for(const word of words||[]){const item=typeof word==='string'?findWord(word):word;if(item&&!seen.has(item.word)){seen.add(item.word);items.push(item)}}return items}
@@ -24,9 +26,11 @@ function favoriteWords(){const state=getState();return Object.entries(state.reco
 function learnedWords(){const state=getState();return Object.entries(state.records||{}).filter(([,record])=>record?.drawn||record?.lastSeen||record?.level||record?.errors||record?.favorite).sort((a,b)=>(b[1].lastSeen||0)-(a[1].lastSeen||0)).map(([word])=>word)}
 function setFavorite(word,value){if(!word)return;const state=getState(),item=findWord(word),old=state.records[word]||{};state.records[word]={...old,source:item?.source||old.source,drawn:old.drawn||!!item,favorite:!!value};saveState(state);updateFavoriteButton()}
 function updateFavoriteButton(){const w=current(),button=$('#favoriteToggle');if(!button)return;if(!w){button.classList.add('hidden');return}const active=!!getState().records[w.word]?.favorite;button.classList.remove('hidden');button.classList.toggle('active',active);button.textContent=active?'★':'☆';button.title=active?'取消收藏重点单词':'收藏重点单词';button.setAttribute('aria-pressed',String(active))}
-function setPoolCompleted(word,done){if(!word)return;pool=getPool();const completed=new Set(pool.completed||[]);if(done)completed.add(word);else completed.delete(word);pool.completed=[...completed];localStorage.setItem('ky5_pool',JSON.stringify(pool))}
-function relatedWordHtml(words){return words.length?`<div class="related-list">${words.map(x=>`<button class="related-word" type="button" data-lookup-word="${x.word}"><strong>${x.word}</strong><small>${x.translation||'暂无释义'}</small></button>`).join('')}</div>`:'<p>暂无可靠近义关联</p>'}
-function renderChoices(word){currentOptions=makeOptions(word);const wrap=$('#choices');wrap.innerHTML='';currentOptions.forEach((item,i)=>{const button=document.createElement('button');button.type='button';button.className='choice-option';button.dataset.choice=String(i);const key=document.createElement('span');key.className='choice-key';key.textContent=String.fromCharCode(65+i);const text=document.createElement('span');text.textContent=optionText(item.translation);button.append(key,text);wrap.append(button)})}
+function todayDone(word){return getState().records[word]?.todayDoneDate===today()}
+function setPoolCompleted(word,done){if(!word)return;pool=getPool();const completed=new Set(pool.completed||[]);if(done)completed.add(word);else completed.delete(word);pool.completed=[...completed];localStorage.setItem('ky5_pool',JSON.stringify(pool));const state=getState(),item=findWord(word),old=state.records[word]||{},next={...old,source:item?.source||old.source};if(done)next.todayDoneDate=today();else if(next.todayDoneDate===today())delete next.todayDoneDate;state.records[word]=next;saveState(state)}
+function repairTodayPool(){if(!pool?.items?.length)return;const completed=new Set(pool.completed||[]);let changed=false;for(const word of pool.items){if(todayDone(word)&&!completed.has(word)){completed.add(word);changed=true}}if(changed){pool.completed=[...completed];localStorage.setItem('ky5_pool',JSON.stringify(pool))}}
+function relatedWordHtml(words){return words.length?`<div class="related-list">${words.map(x=>`<button class="related-word" type="button" data-lookup-word="${x.word}"><strong>${x.word}</strong><small>${cleanTranslation(x)}</small></button>`).join('')}</div>`:'<p>暂无可靠近义关联</p>'}
+function renderChoices(word){currentOptions=makeOptions(word);const wrap=$('#choices');wrap.innerHTML='';currentOptions.forEach((item,i)=>{const button=document.createElement('button');button.type='button';button.className='choice-option';button.dataset.choice=String(i);const key=document.createElement('span');key.className='choice-key';key.textContent=String.fromCharCode(65+i);const text=document.createElement('span');text.textContent=optionText(cleanTranslation(item));button.append(key,text);wrap.append(button)})}
 
 function finishStudy(message){
   sessionStorage.setItem('ky5_last_study_message',message);
@@ -48,7 +52,7 @@ function render(){
   $('#card').classList.remove('hidden');
   $('#word').textContent=w.word;
   $('#word').dataset.lookupWord=w.word;
-  $('#meaning').textContent=w.translation||'暂无释义';
+  $('#meaning').textContent=cleanTranslation(w);
   $('#source').textContent=label[w.source]||'自定义词';
   const rec=getState().records[w.word]||{};
   $('#memoryBadge').textContent=rec.tailStage?'长时记忆尾期':`连续正确 ${rec.correctStreak||0}/3`;
@@ -68,10 +72,11 @@ function finishChoice(correct,selectedIndex=-1){
   const w=current();
   if(!w)return;
   answered=true;
-  const record=rate(w.word,correct?3:1,w.source);
-  if(!correct)queue.splice(Math.min(index+4,queue.length),0,w.word);
-  if(correct&&!reviewMode)setPoolCompleted(w.word,true);
-  if(!correct)setPoolCompleted(w.word,false);
+  const reviewOnly=reviewOnlyIndexes.has(index);
+  const record=reviewOnly?(getState().records[w.word]||{}):rate(w.word,correct?3:1,w.source);
+  if(!reviewOnly&&!correct)queue.splice(Math.min(index+4,queue.length),0,w.word);
+  if(!reviewOnly&&correct&&!reviewMode)setPoolCompleted(w.word,true);
+  if(!reviewOnly&&!correct)setPoolCompleted(w.word,false);
   document.querySelectorAll('.choice-option').forEach((button,i)=>{button.disabled=true;if(currentOptions[i]?.word===w.word)button.classList.add('correct');else if(i===selectedIndex)button.classList.add('wrong')});
   $('#phonetic').textContent=`美 /${w.us||'暂无'}/　英 /${w.uk||'暂无'}/`;
   $('#memoryPack').classList.remove('hidden');
@@ -79,13 +84,14 @@ function finishChoice(correct,selectedIndex=-1){
   $('#reveal').classList.add('hidden');
   $('#nextWord').classList.remove('hidden');
   const feedback=$('#choiceFeedback');
-  feedback.textContent=correct?(record.correctStreak>=3?'回答正确，已连续正确 3 次，标记为已掌握。':`回答正确，连续正确 ${record.correctStreak}/3。`):'本次未计入今日完成，连续正确已清零，并加入本轮回炉。';
+  if(correct)void playPronunciation(w.word,'en-US');
+  feedback.textContent=reviewOnly?'这是右滑回看的单词，本次只作回看，不计入连续正确和今日完成。':(correct?(record.correctStreak>=3?'回答正确，已连续正确 3 次，标记为已掌握。':`回答正确，连续正确 ${record.correctStreak}/3。`):'本次未计入今日完成，连续正确已清零，并加入本轮回炉。');
   feedback.className=`choice-feedback ${correct?'correct':'wrong'}`;
   $('#memoryBadge').textContent=record.tailStage?'已连续正确 3 次':`连续正确 ${record.correctStreak||0}/3`;
   $('#memoryBadge').classList.toggle('tail',!!record.tailStage);
 }
 
-function goPreviousWord(){if(index<=0){$('#studyNotice').textContent='已经是本组第一个单词。';$('#studyNotice').classList.remove('hidden');return}index--;render();const card=$('#card');card.classList.remove('swipe-back');void card.offsetWidth;card.classList.add('swipe-back')}
+function goPreviousWord(){if(index<=0){$('#studyNotice').textContent='已经是本组第一个单词。';$('#studyNotice').classList.remove('hidden');return}index--;reviewOnlyIndexes.add(index);render();$('#studyNotice').textContent='已回到上一个单词：这次回答只用于回看，不计入正确次数。';$('#studyNotice').classList.remove('hidden');const card=$('#card');card.classList.remove('swipe-back');void card.offsetWidth;card.classList.add('swipe-back')}
 
 function buildQueue(){
   pool=getPool();
@@ -94,7 +100,8 @@ function buildQueue(){
   if(mode==='favorite'){reviewMode=true;$('#studyMode').textContent='重点词表';return shuffle(favoriteWords())}
   if(mode==='learned'){reviewMode=true;$('#studyMode').textContent='已背重温';return shuffle(learnedWords())}
   $('#studyMode').textContent='今日背词';
-  return pool.items.filter(x=>!pool.completed.includes(x));
+  repairTodayPool();
+  return pool.items.filter(x=>!pool.completed.includes(x)&&!todayDone(x));
 }
 
 await loadVocabulary();

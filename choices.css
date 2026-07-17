@@ -479,3 +479,30 @@
   .learned-head { display: block; }
   .word-chip { width: 100%; justify-content: space-between; }
 }
+
+.modal-card .row {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+.modal-card .row > div:first-child,
+.modal-card .row span:first-child {
+  min-width: 0;
+}
+.modal-card .row small {
+  overflow-wrap: anywhere;
+  line-height: 1.55;
+}
+.modal-card .row-actions {
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+@media (max-width: 520px) {
+  .modal-card .row {
+    grid-template-columns: 1fr;
+  }
+  .modal-card .row-actions {
+    justify-content: flex-start;
+  }
+}
