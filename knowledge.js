@@ -121,6 +121,15 @@ export function cleanTranslation(wordOrItem,text){
     .trim()||'暂无释义';
 }
 
+export function coreTranslation(wordOrItem,text,limit=3){
+  const source=cleanTranslation(wordOrItem,text),parts=source.split(/[；;]/).map(x=>x.trim()).filter(Boolean),groups=[],priority={v:0,adj:1,n:2,adv:3,prep:4,conj:5,pron:6,num:7,abbr:8};
+  let current='';
+  for(const part of parts){const match=part.match(/^([a-z]+)\.\s*(.*)$/i);if(match)current=match[1].toLowerCase();groups.push({pos:current,text:match?match[2]:part})}
+  const chosen=groups.map((item,index)=>({...item,index,rank:priority[item.pos]??9})).sort((a,b)=>a.rank-b.rank||a.index-b.index).slice(0,limit);
+  let last='';
+  return chosen.map(item=>{const prefix=item.pos&&item.pos!==last?`${item.pos}. `:'';last=item.pos;return`${prefix}${item.text}`}).join('；')||source;
+}
+
 export function rootHint(word){
   const w=word.toLowerCase(),hits=[];
   for(const[p,m]of Object.entries(prefixes))if(w.startsWith(p)&&w.length>p.length+3){hits.push(`${p}-：${m}`);break}
@@ -129,7 +138,7 @@ export function rootHint(word){
 }
 
 export function keyPoint(word){
-  const parts=cleanTranslation(word).split('；').filter(Boolean);
+  const parts=coreTranslation(word).split('；').filter(Boolean);
   return parts.slice(0,3).map((x,i)=>i===0?`<strong><u>${x}</u></strong>`:`<strong>${x}</strong>`).join('；')
 }
 

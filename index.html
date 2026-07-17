@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="choices.css?v=5.6.21">
 <link rel="stylesheet" href="interactive-english.css?v=5.6.17">
 <script src="theme.js" defer></script>
-<script type="module" src="app.js?v=5.6.23">
+<script type="module" src="app.js?v=5.6.24">
 </script>
 </head>
 <body>
@@ -60,7 +60,7 @@
 <button class="btn secondary" id="reviewBtn">到期复习</button>
 <button class="btn secondary" id="wrongBtn">错词回炉</button>
 <button class="btn secondary" id="favoriteBtn">重点词表</button>
-<button class="btn secondary" id="learnedBtn">已背单词</button>
+<button class="btn secondary" id="learnedBtn">学习记录</button>
 <button class="btn secondary" id="quizBtn">单词小测</button>
 <a class="sync-pill" id="syncStatus" href="sync.html">同步状态读取中</a>
 </div>
@@ -132,13 +132,17 @@
 <div class="modal-card">
 <div class="toolbar">
 <div style="flex:1">
-<h2 style="margin:0">已背单词</h2>
+<h2 style="margin:0">学习记录</h2>
 <small id="learnedMeta">读取学习历史中</small>
 </div>
 <button class="iconbtn" id="closeLearned" aria-label="关闭">×</button>
 </div>
+<div class="tabs" id="learnedTabs">
+<button class="btn active" data-learned-view="learning">学习中</button>
+<button class="btn secondary" data-learned-view="mastered">已掌握</button>
+</div>
 <div class="toolbar">
-<button class="btn secondary" id="reviewLearned">已背重温</button>
+<button class="btn secondary" id="reviewLearned">重温当前列表</button>
 </div>
 <div class="list" id="learnedList"></div>
 </div>

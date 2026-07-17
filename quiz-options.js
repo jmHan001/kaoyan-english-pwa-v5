@@ -22,12 +22,23 @@ function addDistractors(target,picked,seenWords,seenTranslations,items,blockedWo
 }
 
 export function shuffleOptions(items,random=Math.random){
-  const a=[...items];
+  const a=[];
+  for(let i=0;i<(items?.length||0);i++)a.push(items[i]);
   for(let i=a.length-1;i;i--){
     const j=Math.floor(random()*(i+1));
     [a[i],a[j]]=[a[j],a[i]];
   }
   return a;
+}
+
+function sampledOptions(items,random=Math.random,limit=96){
+  const length=Number(items?.length)||0,target=Math.min(length,limit),picked=[],seen=new Set();
+  for(let attempts=0;picked.length<target&&attempts<target*2;attempts++){
+    const index=Math.floor(random()*length);
+    if(!seen.has(index)){seen.add(index);picked.push(items[index])}
+  }
+  for(let index=0;picked.length<target&&index<length;index++)if(!seen.has(index)){seen.add(index);picked.push(items[index])}
+  return shuffleOptions(picked,random);
 }
 
 function blockedSet(words){
@@ -40,8 +51,8 @@ export function buildChoiceOptions(answer,preferredGroups=[],fallbackItems=[],li
   const seenTranslations=new Set([translationKey(answer)].filter(Boolean));
   const target=Math.max(0,limit-1);
   const blocked=blockedSet(recentWords);
-  const groups=preferredGroups.map(group=>shuffleOptions(group||[],random));
-  const fallback=shuffleOptions(fallbackItems||[],random);
+  const groups=preferredGroups.map(group=>sampledOptions(group||[],random,48));
+  const fallback=sampledOptions(fallbackItems||[],random,128);
   for(const group of groups){
     addDistractors(target,picked,seenWords,seenTranslations,group,blocked);
   }

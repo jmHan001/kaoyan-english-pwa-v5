@@ -1,5 +1,6 @@
 import{KEYS,getSettings,getState,saveState,candidates,findWord}from'./vocabulary-manager.js';
-const today=()=>new Date().toISOString().slice(0,10);const read=()=>{try{return JSON.parse(localStorage.getItem(KEYS.pool))}catch{return null}};const shuffle=a=>{a=[...a];for(let i=a.length-1;i;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+import{coreFirst}from'./core-vocabulary.js';
+const today=()=>new Date().toISOString().slice(0,10);const read=()=>{try{return JSON.parse(localStorage.getItem(KEYS.pool))}catch{return null}};const shuffle=a=>coreFirst(a);
 function sources(settings,state){if(settings.mode==='gaokao')return[['gaokao',settings.daily]];if(settings.mode==='kaoyan')return[['kaoyan',settings.daily]];const g=Object.values(state.records).filter(x=>x.source==='gaokao'||x.source==='both'),mastered=g.filter(x=>x.level>=4).length,rate=g.length?mastered/g.length:0;return rate>=.9?[['kaoyan',settings.daily]]:rate>=.7?[['gaokao',Math.min(5,settings.daily)],['kaoyan',Math.max(0,settings.daily-5)]]:[['gaokao',Math.ceil(settings.daily*.6)],['kaoyan',Math.floor(settings.daily*.4)]]}
 function sourceFor(mode){return mode==='smart'?'all':mode}
 function markDrawn(words,state=getState()){words.forEach(word=>{const w=findWord(word);state.records[word]={...(state.records[word]||{}),drawn:true,source:w?.source||'kaoyan',round:state.rounds[w?.source==='gaokao'?'gaokao':'kaoyan']||1}});saveState(state)}
