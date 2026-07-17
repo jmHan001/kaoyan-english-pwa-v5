@@ -105,8 +105,8 @@ async function speakText(text,lang='en-US',options={}){
   const best=voices.filter(v=>String(v.lang||'').toLowerCase().startsWith('en')).sort((a,b)=>voiceScore(b,lang)-voiceScore(a,lang))[0];
   if(best)utterance.voice=best;
   utterance.lang=lang;
-  utterance.rate=options.rate??(value.length>28?0.88:0.82);
-  utterance.pitch=1;
+  utterance.rate=options.rate??(value.length>28?0.94:0.9);
+  utterance.pitch=options.pitch??1.08;
   utterance.volume=1;
   currentUtterance=utterance;
   return new Promise(resolve=>{

@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>拾词 · 词库</title>
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css">
@@ -44,12 +44,12 @@
 </div>
 </section>
 </main>
-<script type="module">import{loadVocabulary,allWords,exportAll,importAll}from'./vocabulary-manager.js';let page=1;const $=s=>document.querySelector(s);await loadVocabulary();function render(){const q=$('#search').value.trim().toLowerCase(),f=$('#filter').value;const x=allWords().filter(w=>(f==='all'||w.source===f)&&(w.word.toLowerCase().includes(q)||(w.translation||'').includes(q)));$('#count').textContent=`找到 ${x.length} 个词，当前显示 ${Math.min(x.length,page*100)} 个`;$('#list').innerHTML=x.slice(0,page*100).map(w=>`<div class="row">
+<script type="module">import{loadVocabulary,allWords,exportAll,importAll}from'./vocabulary-manager.js';import{speak}from'./knowledge.js?v=5.6.17';let page=1;const $=s=>document.querySelector(s);await loadVocabulary();function render(){const q=$('#search').value.trim().toLowerCase(),f=$('#filter').value;const x=allWords().filter(w=>(f==='all'||w.source===f)&&(w.word.toLowerCase().includes(q)||(w.translation||'').includes(q)));$('#count').textContent=`找到 ${x.length} 个词，当前显示 ${Math.min(x.length,page*100)} 个`;$('#list').innerHTML=x.slice(0,page*100).map(w=>`<div class="row">
 <div>
 <strong>${w.word}</strong>
 <small>${w.translation||''}</small>
 </div>
-<span class="chip">${w.source==='both'?'共有':w.source==='gaokao'?'高考':'考研'}</span>
-</div>`).join('')||'<div class="empty">没有匹配结果</div>'}$('#search').oninput=()=>{page=1;render()};$('#filter').onchange=()=>{page=1;render()};$('#more').onclick=()=>{page++;render()};$('#export').onclick=exportAll;$('#import').onchange=e=>importAll(e.target.files[0]);render();</script>
+<div class="row-actions"><button class="iconbtn" data-speak-word="${w.word}" title="播放发音">▶</button><span class="chip">${w.source==='both'?'共有':w.source==='gaokao'?'高考':'考研'}</span></div>
+</div>`).join('')||'<div class="empty">没有匹配结果</div>'}$('#search').oninput=()=>{page=1;render()};$('#filter').onchange=()=>{page=1;render()};$('#more').onclick=()=>{page++;render()};$('#export').onclick=exportAll;$('#import').onchange=e=>importAll(e.target.files[0]);document.addEventListener('click',e=>{const word=e.target.closest?.('[data-speak-word]')?.dataset.speakWord;if(word)speak(word)});render();</script>
 </body>
 </html>

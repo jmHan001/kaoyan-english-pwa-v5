@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#26382d">
 <title>拾词 · 今日学习</title>
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -10,10 +10,10 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="memory.css">
 <link rel="stylesheet" href="enhancements.css">
-<link rel="stylesheet" href="choices.css?v=5.6.14">
-<link rel="stylesheet" href="interactive-english.css?v=5.6.11">
+<link rel="stylesheet" href="choices.css?v=5.6.17">
+<link rel="stylesheet" href="interactive-english.css?v=5.6.17">
 <script src="theme.js" defer></script>
-<script type="module" src="app.js?v=5.6.15">
+<script type="module" src="app.js?v=5.6.17">
 </script>
 </head>
 <body>
@@ -69,6 +69,7 @@
 <strong id="todayCount">0 / 0</strong>
 <small id="todayRemaining">正在读取学习池</small>
 </div>
+<button class="btn accent today-start" type="button" data-home-action="today">今日背词</button>
 <progress id="todayProgress" value="0" max="1" aria-label="今日任务完成进度"></progress>
 </div>
 <div class="acceptance-panel" id="acceptancePanel" aria-live="polite"></div>

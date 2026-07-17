@@ -7,6 +7,14 @@ document.documentElement.style.colorScheme=name==='dark'?'dark':'light';
 localStorage.setItem('ky5_theme',name);
 document.querySelector('#themeSelect')?.setAttribute('data-value',name)}
 document.head.insertAdjacentHTML('beforeend','<style>[data-theme="dark"] .btn:not(.secondary):not(.danger){background:var(--accent);color:#18120f}[data-theme="dark"] .btn.accent{background:var(--accent);color:#18120f}</style>');
+let lastTouchEnd=0;
+document.addEventListener('touchend',e=>{
+const tag=e.target?.tagName;
+if(['INPUT','TEXTAREA','SELECT'].includes(tag))return;
+const now=Date.now();
+if(now-lastTouchEnd<320)e.preventDefault();
+lastTouchEnd=now;
+},{passive:false});
 document.addEventListener('DOMContentLoaded',()=>{const nav=document.querySelector('.nav');
 if(nav){if(!nav.querySelector('[href="lookup.html"]'))nav.insertAdjacentHTML('beforeend','<a href="lookup.html">查词</a><a href="exam.html">真题</a>');
 const wrap=document.createElement('label');
