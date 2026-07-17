@@ -28,6 +28,7 @@
 <h1>把长句，拆成能读懂的小段。</h1>
 <div class="toolbar" style="margin-top:12px">
 <button class="btn" id="importClipboard">从剪贴板导入</button>
+<button class="btn secondary" id="openSavedSentences">已存句子 <span id="savedSentenceCount">0</span></button>
 <button class="btn secondary" id="clearImport">清空导入内容</button>
 <button class="btn secondary" id="copyGptTemplate">复制 GPT 输出模板</button>
 <button class="btn secondary" id="sample">填入示例</button>
@@ -113,7 +114,17 @@
 </div>
 </div>
 </div>
-<script type="module" src="sentence.js?v=5.6.15">
+<div class="modal hidden" id="savedSentencesModal">
+<div class="modal-card">
+<button class="iconbtn" style="float:right" id="closeSavedSentences">×</button>
+<h2>已存句子</h2>
+<p class="muted" id="savedSentencesMeta">按保存时间排序</p>
+<div id="savedSentenceList" class="sentence-history">
+<div class="empty">还没有保存记录</div>
+</div>
+</div>
+</div>
+<script type="module" src="sentence.js?v=5.6.16">
 </script>
 </body>
 </html>

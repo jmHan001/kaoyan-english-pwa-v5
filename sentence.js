@@ -112,6 +112,7 @@ const fieldIds=[...FIELD_KEYS,'unrecognized'];
 const labelOf=x=>x==='both'?'高考与考研共有':x==='gaokao'?'高考词':x==='kaoyan'?'考研词':'未收录';
 
 function history(){return readJson(KEYS.history,[])}
+function sortedHistory(){return history().sort((a,b)=>(b.at||0)-(a.at||0))}
 
 function readForm(){
   const record={};
@@ -173,8 +174,29 @@ function renderSegments(record=readForm()){
 }
 
 function renderHistory(){
-  const items=history();
-  $('#history').innerHTML=items.length?items.slice(0,30).map(item=>`<button class="history-item" data-history="${esc(item.id)}"><strong>${esc(item.originalSentence||item.sentence||'未命名长难句')}</strong><small>${esc(item.sentenceNumber||'无编号')} · ${esc(item.source||'无来源')} · ${new Date(item.at).toLocaleString('zh-CN')}</small></button>`).join(''):'<div class="empty">还没有保存记录</div>';
+  const items=sortedHistory();
+  $('#savedSentenceCount').textContent=items.length;
+  $('#history').innerHTML=renderHistoryItems(items.slice(0,30));
+  renderSavedSentenceList(items);
+}
+
+function sentenceTitle(item){
+  return item.sentenceNumber||item.source||String(item.originalSentence||item.sentence||'未命名长难句').slice(0,52);
+}
+
+function savedAt(item){
+  return item.at?new Date(item.at).toLocaleString('zh-CN'):'未知时间';
+}
+
+function renderHistoryItems(items){
+  return items.length?items.map(item=>`<button class="history-item saved-sentence-item" data-history="${esc(item.id)}"><strong>${esc(sentenceTitle(item))}</strong><small>保存时间：${esc(savedAt(item))}</small><small>${esc(item.source||'无来源')} · ${esc(String(item.originalSentence||item.sentence||'').slice(0,90))}</small></button>`).join(''):'<div class="empty">还没有保存记录</div>';
+}
+
+function renderSavedSentenceList(items=sortedHistory()){
+  const list=$('#savedSentenceList');
+  if(!list)return;
+  $('#savedSentencesMeta').textContent=items.length?`共 ${items.length} 条，按保存时间从新到旧排序。`:'还没有保存过长难句。';
+  list.innerHTML=renderHistoryItems(items);
 }
 
 function showNotice(message,type=''){
@@ -241,6 +263,8 @@ function saveAnalysis(){
 }
 
 $('#importClipboard').onclick=importClipboard;
+$('#openSavedSentences').onclick=()=>{$('#savedSentencesModal').classList.remove('hidden');renderSavedSentenceList()};
+$('#closeSavedSentences').onclick=()=>$('#savedSentencesModal').classList.add('hidden');
 $('#clearImport').onclick=clearForm;
 $('#copyGptTemplate').onclick=copyGptTemplate;
 $('#previewImport').onclick=()=>{const record=readForm();renderPreview(record);renderSegments(record)};
@@ -325,7 +349,12 @@ document.addEventListener('click',e=>{
   const historyButton=e.target.closest?.('[data-history]');
   if(historyButton){
     const item=history().find(x=>x.id===historyButton.dataset.history);
-    if(item)fillForm(item);
+    if(item){
+      fillForm(item);
+      $('#savedSentencesModal')?.classList.add('hidden');
+      showNotice(`已打开已存句子：${sentenceTitle(item)}，保存于 ${savedAt(item)}。`);
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
   }
   const w=e.target.dataset.word;
   if(w){
