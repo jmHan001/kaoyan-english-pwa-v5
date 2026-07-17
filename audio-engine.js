@@ -81,6 +81,10 @@ function voicesReady(){
   return voicesPromise;
 }
 
+export function warmSpeechVoices(){
+  return voicesReady();
+}
+
 function voiceScore(voice,lang){
   const target=String(lang||'en-US').toLowerCase(),vlang=String(voice.lang||'').toLowerCase(),name=String(voice.name||'').toLowerCase();
   let score=0;

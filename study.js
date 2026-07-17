@@ -4,10 +4,10 @@ import{rate,dueWords,wrongWords}from'./review-manager.js';
 import{rootHint,keyPoint,nearWords,cleanTranslation}from'./knowledge.js?v=5.6.21';
 import{buildChoiceOptions}from'./quiz-options.js';
 import{bindInteractiveEnglish,makeInteractiveText,sentenceAudioButton}from'./interactive-english.js?v=5.6.17';
-import{playPronunciation}from'./audio-engine.js?v=5.6.17';
+import{playPronunciation,warmSpeechVoices}from'./audio-engine.js?v=5.6.23';
 
 const $=s=>document.querySelector(s),label={gaokao:'高考词',kaoyan:'考研词',both:'高考与考研共有'};
-let pool,queue=[],index=0,currentOptions=[],recentDistractors=[],answered=false,reviewMode=false;
+let pool,queue=[],index=0,currentOptions=[],recentDistractors=[],answered=false,reviewMode=false,quizMode=false,quizScore=0,quizResults=[],quizSaved=false;
 const reviewOnlyIndexes=new Set();
 
 const params=new URLSearchParams(location.search);
@@ -24,6 +24,9 @@ function optionText(value){const text=String(value||'暂无释义').replace(/\s+
 function chunks(word){const parts=word.match(/[^aeiouy]*[aeiouy]+(?:[^aeiouy](?=[^aeiouy]*[aeiouy])|[^aeiouy]*$)/gi);return parts?.length>1?parts.join(' · '):word}
 function favoriteWords(){const state=getState();return Object.entries(state.records||{}).filter(([,record])=>record?.favorite).map(([word])=>word)}
 function learnedWords(){const state=getState();return Object.entries(state.records||{}).filter(([,record])=>record?.drawn||record?.lastSeen||record?.level||record?.errors||record?.favorite).sort((a,b)=>(b[1].lastSeen||0)-(a[1].lastSeen||0)).map(([word])=>word)}
+function quizCandidates(){const seen=new Set(),items=[];for(const word of pool?.items||[]){const w=findWord(word);if(w&&!seen.has(w.word)){seen.add(w.word);items.push(w.word)}}for(const word of [...wrongWords(),...dueWords()]){const w=findWord(word);if(w&&!seen.has(w.word)){seen.add(w.word);items.push(w.word)}}return items}
+function quizBook(){try{return JSON.parse(localStorage.getItem('ky5_quiz')||'{}')}catch{return{}}}
+function saveQuizAttempt(){if(!quizMode||quizSaved)return;const book=quizBook(),wrong=quizResults.filter(x=>!x.correct),day=today();book[day]={date:day,attempts:[...(book[day]?.attempts||[]),{id:crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,at:Date.now(),score:quizScore,total:quizResults.length,wrong:wrong.map(x=>x.word)}]};localStorage.setItem('ky5_quiz',JSON.stringify(book));quizSaved=true}
 function setFavorite(word,value){if(!word)return;const state=getState(),item=findWord(word),old=state.records[word]||{};state.records[word]={...old,source:item?.source||old.source,drawn:old.drawn||!!item,favorite:!!value};saveState(state);updateFavoriteButton()}
 function updateFavoriteButton(){const w=current(),button=$('#favoriteToggle');if(!button)return;if(!w){button.classList.add('hidden');return}const active=!!getState().records[w.word]?.favorite;button.classList.remove('hidden');button.classList.toggle('active',active);button.textContent=active?'★':'☆';button.title=active?'取消收藏重点单词':'收藏重点单词';button.setAttribute('aria-pressed',String(active))}
 function todayDone(word){return getState().records[word]?.todayDoneDate===today()}
@@ -37,6 +40,12 @@ function finishStudy(message){
   location.href='index.html';
 }
 
+function finishQuizStudy(){
+  saveQuizAttempt();
+  const total=quizResults.length||queue.length,rate=total?Math.round(quizScore/total*100):0,wrong=quizResults.filter(x=>!x.correct).length;
+  finishStudy(`单词小测完成：${quizScore}/${total}，正确率 ${rate}%。${wrong?`错 ${wrong} 个，已进入错词回炉。`:'这组全对，很稳。'}`);
+}
+
 function render(){
   const w=current();
   answered=false;
@@ -46,6 +55,7 @@ function render(){
   $('#nextWord').classList.add('hidden');
   $('#reveal').classList.remove('hidden');
   if(!w){
+    if(quizMode){finishQuizStudy();return}
     finishStudy(reviewMode?'本组背词已完成，已回到主页。':'今日背词已完成，已回到主页。');
     return;
   }
@@ -74,8 +84,9 @@ function finishChoice(correct,selectedIndex=-1){
   answered=true;
   const reviewOnly=reviewOnlyIndexes.has(index);
   const record=reviewOnly?(getState().records[w.word]||{}):rate(w.word,correct?3:1,w.source);
-  if(!reviewOnly&&!correct)queue.splice(Math.min(index+4,queue.length),0,w.word);
-  if(!reviewOnly&&correct&&!reviewMode)setPoolCompleted(w.word,true);
+  if(quizMode&&!reviewOnly){if(correct)quizScore++;quizResults.push({word:w.word,translation:cleanTranslation(w),correct})}
+  if(!reviewOnly&&!quizMode&&!correct)queue.splice(Math.min(index+4,queue.length),0,w.word);
+  if(!reviewOnly&&!quizMode&&correct&&!reviewMode)setPoolCompleted(w.word,true);
   if(!reviewOnly&&!correct)setPoolCompleted(w.word,false);
   document.querySelectorAll('.choice-option').forEach((button,i)=>{button.disabled=true;if(currentOptions[i]?.word===w.word)button.classList.add('correct');else if(i===selectedIndex)button.classList.add('wrong')});
   $('#phonetic').textContent=`美 /${w.us||'暂无'}/　英 /${w.uk||'暂无'}/`;
@@ -84,8 +95,8 @@ function finishChoice(correct,selectedIndex=-1){
   $('#reveal').classList.add('hidden');
   $('#nextWord').classList.remove('hidden');
   const feedback=$('#choiceFeedback');
-  if(correct)void playPronunciation(w.word,'en-US');
-  feedback.textContent=reviewOnly?'这是右滑回看的单词，本次只作回看，不计入连续正确和今日完成。':(correct?(record.correctStreak>=3?'回答正确，已连续正确 3 次，标记为已掌握。':`回答正确，连续正确 ${record.correctStreak}/3。`):'本次未计入今日完成，连续正确已清零，并加入本轮回炉。');
+  if(correct)void playPronunciation(w.word,'en-US',{preferHuman:false,rate:0.9,pitch:1.08});
+  feedback.textContent=reviewOnly?'这是右滑回看的单词，本次只作回看，不计入连续正确和今日完成。':(quizMode?(correct?`小测答对，已即时朗读。当前得分 ${quizScore}/${quizResults.length}。`:'小测答错，正确次数已清零，并加入错词回炉。'):(correct?(record.correctStreak>=3?'回答正确，已连续正确 3 次，标记为已掌握。':`回答正确，连续正确 ${record.correctStreak}/3。`):'本次未计入今日完成，连续正确已清零，并加入本轮回炉。'));
   feedback.className=`choice-feedback ${correct?'correct':'wrong'}`;
   $('#memoryBadge').textContent=record.tailStage?'已连续正确 3 次':`连续正确 ${record.correctStreak||0}/3`;
   $('#memoryBadge').classList.toggle('tail',!!record.tailStage);
@@ -99,6 +110,7 @@ function buildQueue(){
   if(mode==='wrong'){reviewMode=true;$('#studyMode').textContent='错词回炉';return shuffle(wrongWords()).slice(0,Math.max(1,Number(params.get('count'))||wrongWords().length))}
   if(mode==='favorite'){reviewMode=true;$('#studyMode').textContent='重点词表';return shuffle(favoriteWords())}
   if(mode==='learned'){reviewMode=true;$('#studyMode').textContent='已背重温';return shuffle(learnedWords())}
+  if(mode==='quiz'){quizMode=true;reviewMode=true;$('#studyMode').textContent='单词小测';document.querySelector('.study-top h1').textContent='专心小测';$('#recallCue').textContent='先读单词，再选择正确中文释义；可点美音/英音听发音';return shuffle(quizCandidates()).slice(0,Math.max(1,Number(params.get('count'))||10))}
   $('#studyMode').textContent='今日背词';
   repairTodayPool();
   return pool.items.filter(x=>!pool.completed.includes(x)&&!todayDone(x));
@@ -106,9 +118,10 @@ function buildQueue(){
 
 await loadVocabulary();
 bindInteractiveEnglish();
+void warmSpeechVoices();
 queue=buildQueue().filter(word=>findWord(word));
 if(!queue.length){
-  finishStudy(mode==='today'?'今日任务已完成，可以做小测或加背。':'本组暂无可背单词。');
+  finishStudy(mode==='today'?'今日任务已完成，可以做小测或加背。':mode==='quiz'?'小测暂无可用单词。先背几个词，再来验收。':'本组暂无可背单词。');
 }else{
   render();
 }
