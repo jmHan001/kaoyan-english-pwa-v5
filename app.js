@@ -7,9 +7,10 @@ import{getSyncConfig,isConfigured,startAutoSync}from'./cloud-sync.js?v=5.8.2';
 import{buildChoiceOptions}from'./quiz-options.js?v=5.7.3';
 import{bindInteractiveEnglish,makeInteractiveText,sentenceAudioButton}from'./interactive-english.js?v=5.6.17';
 import{playPronunciation}from'./audio-engine.js?v=5.6.17';
-import{localDateKey}from'./date-utils.js?v=5.8.0';
+import{localDateKey,timestampValue}from'./date-utils.js?v=5.8.3';
 
 let pool,index=0,queue=[],reviewMode=false,currentOptions=[],answered=false,quiz=null,quizOptions=[],recentDistractors=[],studyOpen=false,learnedView='learning';
+const recoveryMode=new URLSearchParams(location.search).get('recoverToday')==='1';
 const reviewOnlyIndexes=new Set();
 const $=s=>document.querySelector(s),label={gaokao:'高考词',kaoyan:'考研词',both:'高考与考研共有'};
 const readJson=(key,fallback=null)=>{try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}};
@@ -51,7 +52,8 @@ if($('#homeStreak'))$('#homeStreak').textContent=`连续 ${x.streak||0} 天`;
 if($('#homeDueCount'))$('#homeDueCount').textContent=String(x.due||0);
 if($('#homeWrongCount'))$('#homeWrongCount').textContent=String(wrongWords().length||0)}
 function repairTodayPool(){if(!pool?.items?.length)return;const completed=new Set(pool.completed||[]);let changed=false;for(const word of pool.items){if(todayDone(word)&&!completed.has(word)){completed.add(word);changed=true}}if(changed){pool.completed=[...completed];localStorage.setItem('ky5_pool',JSON.stringify(pool))}}
-function renderTaskProgress(){if(!pool)return{total:0,done:0};repairTodayPool();const total=pool.items.length,completed=new Set(pool.completed||[]),done=pool.items.filter(word=>completed.has(word)||todayDone(word)).length,remaining=Math.max(0,total-done),progress=$('#todayProgress');$('#todayCount').textContent=`${done}/${total}`;$('#todayRemaining').textContent=total?(remaining?`还剩 ${remaining} 个单词需要答对`:'今日任务已全部答对'):'学习池为空，请在编辑学习池中添加单词';progress.max=Math.max(1,total);progress.value=done;$('#todayTask').classList.toggle('complete',total>0&&done===total);return{total,done}}
+function renderTaskProgress(){if(!pool)return{total:0,done:0};repairTodayPool();const total=pool.items.length,completed=new Set(pool.completed||[]),done=pool.items.filter(word=>completed.has(word)||todayDone(word)).length,remaining=Math.max(0,total-done),progress=$('#todayProgress');$('#todayCount').textContent=`${done}/${total}`;$('#todayRemaining').textContent=total?(remaining?`还剩 ${remaining} 个单词需要答对`:'今日任务已全部答对'):'学习池为空，请在编辑学习池中添加单词';progress.max=Math.max(1,total);progress.value=done;$('#todayTask').classList.toggle('complete',total>0&&done===total);$('#restoreTodayTask')?.classList.toggle('hidden',!recoveryMode||!total||done>0);return{total,done}}
+function restoreTodayTask(){pool=getPool();const total=pool.items.length,state=getState(),recent=Object.entries(state.records||{}).filter(([,record])=>timestampValue(record?.lastSeen)>0&&!record?.slain).sort((a,b)=>timestampValue(b[1].lastSeen)-timestampValue(a[1].lastSeen)).slice(0,total).map(([word])=>word).filter(word=>findWord(word));if(recent.length===total)pool.items=recent;pool.completed=[...pool.items];pool.date=today();pool.updatedAt=Date.now();localStorage.setItem('ky5_pool',JSON.stringify(pool));for(const word of pool.items)state.records[word]={...(state.records[word]||{}),drawn:true,source:findWord(word)?.source||state.records[word]?.source,todayDoneDate:today()};saveState(state);const task=renderTaskProgress();renderAcceptance(task);renderStats();$('#reviewNotice').textContent=`已从最近学习记录恢复今日任务：${task.done}/${task.total}。`;$('#reviewNotice').classList.remove('hidden')}
 function renderSyncStatus(status='idle',error=null){const el=$('#syncStatus');if(!el)return;const configured=isConfigured(getSyncConfig()),meta=readJson('ky5_sync_meta',{});el.className=`sync-pill ${configured?'configured':'missing'} ${status}`;if(status==='busy')el.textContent='正在同步';else if(status==='error')el.textContent=`同步异常 · ${String(error?.message||error||'点此处理').slice(0,22)}`;else el.textContent=configured?`已同步 · ${formatTime(meta.lastSyncAt||meta.lastAppliedAt)}`:'未绑定同步';}
 function quizBook(){return readJson('ky5_quiz',{})}
 function saveQuizAttempt(){const day=today(),book=quizBook(),wrong=quiz.results.filter(x=>!x.correct);book[day]={date:day,attempts:[...(book[day]?.attempts||[]),{id:crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,at:Date.now(),score:quiz.score,total:quiz.items.length,wrong:wrong.map(x=>x.word)}]};localStorage.setItem('ky5_quiz',JSON.stringify(book))}
@@ -179,6 +181,7 @@ $('#reviewFavorites').onclick=startFavoriteReview;
 $('#reviewLearned').onclick=startLearnedReview;
 document.addEventListener('click',e=>{const wrongCount=e.target.closest?.('[data-wrong-count]')?.dataset.wrongCount;if(wrongCount)startWrongReview(wrongCount)});
 $('#quizBtn').onclick=()=>startQuiz();
+$('#restoreTodayTask').onclick=restoreTodayTask;
 $('#closeQuiz').onclick=()=>{$('#quizModal').classList.add('hidden');quiz=null};
 if($('#closeStudy'))$('#closeStudy').onclick=()=>closeStudyWindow('已退出背词窗口，回到主页。');
 let touchStartX=0,touchStartY=0,touchStartAt=0;

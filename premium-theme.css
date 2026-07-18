@@ -76,6 +76,7 @@ h1,h2{color:var(--ink)}
 .today-task progress::-webkit-progress-value{background:var(--accent)}
 .today-task progress::-moz-progress-bar{background:var(--accent)}
 .today-start{align-self:center;min-width:180px;justify-content:center;text-align:center;text-decoration:none}
+.today-actions{align-self:center;display:grid;gap:8px;min-width:180px}.today-actions .today-start{min-width:0}
 .today-task.complete{background:transparent;border:0}
 .home-action-list{padding:5px 28px;margin-bottom:18px}
 .home-action-row{display:grid;grid-template-columns:48px 1fr auto 22px;align-items:center;gap:14px;width:100%;min-height:82px;padding:14px 2px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);text-align:left}
@@ -168,7 +169,7 @@ h1,h2{color:var(--ink)}
   .home-task-panel{padding:25px 24px}
   .today-task{grid-template-columns:1fr;gap:18px}
   .today-task progress{grid-row:auto}
-  .today-start{width:100%;min-width:0}
+  .today-actions,.today-start{width:100%;min-width:0}
   .home-action-list{padding:3px 20px}
   .home-action-row{grid-template-columns:42px 1fr auto 16px;min-height:76px;gap:10px}
   .home-action-icon{width:34px;height:34px}

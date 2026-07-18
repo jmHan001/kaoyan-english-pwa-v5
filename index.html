@@ -13,9 +13,9 @@
 <link rel="stylesheet" href="enhancements.css?v=5.6.25">
 <link rel="stylesheet" href="choices.css?v=5.6.21">
 <link rel="stylesheet" href="interactive-english.css?v=5.6.17">
-<link rel="stylesheet" href="premium-theme.css?v=5.7.4">
+<link rel="stylesheet" href="premium-theme.css?v=5.8.3">
 <script src="theme.js?v=5.7.0" defer></script>
-<script type="module" src="app.js?v=5.8.2">
+<script type="module" src="app.js?v=5.8.3">
 </script>
 </head>
 <body>
@@ -42,7 +42,7 @@
 <strong id="todayCount">0/0</strong>
 <small id="todayRemaining">正在读取学习池</small>
 </div>
-<a class="btn accent today-start" href="study.html?mode=today">继续背词</a>
+<div class="today-actions"><a class="btn accent today-start" href="study.html?mode=today">继续背词</a><button class="btn secondary hidden" id="restoreTodayTask" type="button">恢复今日完成</button></div>
 <progress id="todayProgress" value="0" max="1" aria-label="今日任务完成进度"></progress>
 </div>
 </section>
