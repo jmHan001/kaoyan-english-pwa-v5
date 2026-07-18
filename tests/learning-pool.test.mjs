@@ -22,7 +22,17 @@ const poolManager=await import(`../learning-pool.js?test=${Date.now()}`);
 const recovered=poolManager.getPool();
 assert.equal(recovered.items.length,2,'an empty synced pool should rebuild automatically');
 
-const before=[...recovered.items];
+const today=new Date().toISOString().slice(0,10),state=manager.getState();
+state.records.alpha={drawn:true,source:'gaokao',round:1,todayDoneDate:today,correctStreak:1};
+state.records.delta={drawn:true,source:'kaoyan',round:1};
+manager.saveState(state);
+localStorage.setItem(manager.KEYS.pool,JSON.stringify({date:today,mode:'smart',items:['delta','epsilon'],completed:[],locked:[]}));
+const restored=poolManager.getPool();
+assert.equal(restored.items.includes('alpha'),true,'today completed words should be restored to a replaced pool');
+assert.equal(restored.completed.includes('alpha'),true,'restored today words should remain completed');
+
+const before=[...restored.items];
+manager.saveSettings({mode:'smart',daily:1});
 poolManager.resize(1);
 const after=poolManager.getPool();
 assert.equal(after.items.length,1);
