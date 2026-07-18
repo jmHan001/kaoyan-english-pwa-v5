@@ -1,9 +1,9 @@
 import{loadVocabulary,findWord,allWords,getSettings,saveSettings,getState,saveState,migrateLegacy,exportAll}from'./vocabulary-manager.js';
-import{getPool,remove,replace,toggleLock,add,fill,resize,extend}from'./learning-pool.js?v=5.7.8';
+import{getPool,remove,replace,toggleLock,add,fill,resize,extend}from'./learning-pool.js?v=5.7.9';
 import{rate,dueWords,wrongWords,restoreSlainWord}from'./review-manager.js?v=5.7.5';
 import{stats}from'./stats.js?v=5.7.5';
 import{rootHint,keyPoint,nearWords,cleanTranslation,coreTranslation}from'./knowledge.js?v=5.6.25';
-import{getSyncConfig,isConfigured,startAutoSync}from'./cloud-sync.js?v=5.7.8';
+import{getSyncConfig,isConfigured,startAutoSync}from'./cloud-sync.js?v=5.7.9';
 import{buildChoiceOptions}from'./quiz-options.js?v=5.7.3';
 import{bindInteractiveEnglish,makeInteractiveText,sentenceAudioButton}from'./interactive-english.js?v=5.6.17';
 import{playPronunciation}from'./audio-engine.js?v=5.6.17';

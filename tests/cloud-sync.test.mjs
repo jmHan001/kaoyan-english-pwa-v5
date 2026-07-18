@@ -23,4 +23,14 @@ assert.equal(merged.data.ky5_pool.items.includes('learned'),true,'sync should re
 assert.equal(merged.data.ky5_pool.completed.includes('learned'),true,'sync should preserve today completion');
 assert.equal(syncSummary(merged).poolDone,1);
 
+const seenAt=Date.now()-1000;
+const conflict=mergeSnapshots({version:1,savedAt:4,data:{
+  ky5_settings:{mode:'gaokao',daily:1},
+  ky5_state:{records:{recent:{lastSeen:seenAt,correctStreak:1,drawn:true}},history:{},rounds:{gaokao:1,kaoyan:1}},
+  ky5_pool:{date:today,mode:'gaokao',items:['replacement'],completed:[],locked:[],updatedAt:seenAt+500}
+}},remote);
+assert.deepEqual(conflict.data.ky5_pool.items,['recent'],'a newer replacement pool should recover today recent correct words');
+assert.deepEqual(conflict.data.ky5_pool.completed,['recent']);
+assert.equal(conflict.data.ky5_state.records.recent.todayDoneDate,today);
+
 console.log('cloud-sync tests passed');
