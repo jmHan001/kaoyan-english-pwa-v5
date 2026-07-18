@@ -1,17 +1,18 @@
-import{getSyncConfig,saveSyncConfig,clearSyncConfig,isConfigured,createSyncId,syncNow,exportSyncFile,importSyncFile,startAutoSync}from'./cloud-sync.js?v=5.6.21';
+import{getSyncConfig,saveSyncConfig,clearSyncConfig,isConfigured,createSyncId,syncNow,exportSyncFile,importSyncFile,startAutoSync}from'./cloud-sync.js?v=5.6.25';
 const $=s=>document.querySelector(s),config=getSyncConfig();
 const fields={endpoint:$('#endpoint'),anonKey:$('#anonKey'),syncId:$('#syncId'),passphrase:$('#passphrase'),autoSync:$('#autoSync')};
 for(const[k,el]of Object.entries(fields)){if(k==='autoSync')el.checked=config.autoSync!==false;else el.value=config[k]||''}
 function status(kind,title,text){$('#statusDot').className=`status-dot ${kind||''}`;$('#statusTitle').textContent=title;$('#statusText').textContent=text;$('#syncNow').disabled=!isConfigured(getSyncConfig())||kind==='busy'}
 function toast(message){const el=document.createElement('div');el.className='toast';el.textContent=message;document.body.append(el);setTimeout(()=>el.remove(),2800)}
 function fmt(t){return new Intl.DateTimeFormat('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(t)}
+function renderSummary(summary){const x=summary||{};$('#syncSummaryGrid').innerHTML=`<div class="stat"><strong>${x.poolDone||0}/${x.poolTotal||0}</strong><span>今日学习池</span></div><div class="stat"><strong>${x.records||0}</strong><span>学习记录</span></div><div class="stat"><strong>${x.mastered||0}</strong><span>已掌握</span></div><div class="stat"><strong>${x.wrong||0}</strong><span>错词</span></div><div class="stat"><strong>${x.favorites||0}</strong><span>收藏</span></div><div class="stat"><strong>${x.sentences||0}</strong><span>长难句</span></div>`}
 function randomPassphrase(){const bytes=crypto.getRandomValues(new Uint8Array(24));return btoa(String.fromCharCode(...bytes)).replace(/[+/=]/g,'').slice(0,28)}
 function encodePair(){const value={v:1,syncId:fields.syncId.value.trim(),passphrase:fields.passphrase.value};return btoa(unescape(encodeURIComponent(JSON.stringify(value)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
 function decodePair(value){const padded=String(value||'').replace(/-/g,'+').replace(/_/g,'/');return JSON.parse(decodeURIComponent(escape(atob(padded+'='.repeat((4-padded.length%4)%4)))))}
 function pairingLink(){if(!fields.syncId.value.trim()||fields.passphrase.value.length<8)throw new Error('请先生成配对信息');return`${location.origin}${location.pathname}#pair=${encodePair()}`}
 function applyPair(value){const source=String(value||'').trim(),token=source.includes('#pair=')?source.split('#pair=')[1]:source,pair=decodePair(token);if(pair.v!==1||!pair.syncId||!pair.passphrase)throw new Error('配对链接无效');fields.syncId.value=pair.syncId;fields.passphrase.value=pair.passphrase;status('','已读取电脑配对信息','点击“保存并同步”，即可打开本机持续互通。')}
-function setReady(){const c=getSyncConfig(),meta=JSON.parse(localStorage.getItem('ky5_sync_meta')||'{}');if(isConfigured(c))status('ready','云同步已配置',meta.lastSyncAt?`上次同步：${fmt(meta.lastSyncAt)}`:'点击立即同步完成首次连接');else status('','尚未配置云同步','你也可以先使用下方的同步文件完成一次迁移。')}
-async function run(){status('busy','正在同步','正在合并本机与云端记录，请不要关闭页面。');try{const result=await syncNow();status('ready','同步完成',`${fmt(Date.now())} · ${result.hadRemote?'已合并两端记录':'已建立首份云端记录'}`);toast('电脑与手机数据已同步')}catch(error){status('error','同步失败',error.message);throw error}}
+function setReady(){const c=getSyncConfig(),meta=JSON.parse(localStorage.getItem('ky5_sync_meta')||'{}');renderSummary(meta.summary);if(isConfigured(c))status('ready','云同步已配置',meta.lastSyncAt?`上次同步：${fmt(meta.lastSyncAt)}`:'点击立即同步完成首次连接');else status('','尚未配置云同步','你也可以先使用下方的同步文件完成一次迁移。')}
+async function run(){status('busy','正在同步','正在合并本机与云端记录，请不要关闭页面。');try{const result=await syncNow();renderSummary(result.summary);status('ready','同步完成',`${fmt(Date.now())} · ${result.hadRemote?'已合并两端记录':'已建立首份云端记录'}`);toast('电脑与手机数据已同步')}catch(error){status('error','同步失败',error.message);throw error}}
 $('#syncForm').onsubmit=async e=>{e.preventDefault();saveSyncConfig({endpoint:fields.endpoint.value,anonKey:fields.anonKey.value,syncId:fields.syncId.value,passphrase:fields.passphrase.value,autoSync:fields.autoSync.checked});try{await run()}catch{}}
 $('#syncNow').onclick=()=>run().catch(()=>{});
 $('#newCode').onclick=()=>{fields.syncId.value=createSyncId();toast('已生成新的同步码')};

@@ -9,8 +9,9 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="sync.css">
+<link rel="stylesheet" href="mobile-nav.css?v=5.6.25">
 <script src="theme.js" defer></script>
-<script type="module" src="sync-page.js?v=5.6.21"></script>
+<script type="module" src="sync-page.js?v=5.6.25"></script>
 </head>
 <body>
 <main class="shell sync-shell">
@@ -40,6 +41,11 @@
 <p id="statusText">你也可以先使用下方的同步文件完成一次迁移。</p>
 </div>
 <button class="btn" id="syncNow" disabled>立即同步</button>
+</section>
+
+<section class="panel sync-summary" id="syncSummary" aria-live="polite">
+<h2>最近同步内容</h2>
+<div class="statgrid" id="syncSummaryGrid"><div class="empty">完成一次同步后显示明细</div></div>
 </section>
 
 <div class="sync-grid">

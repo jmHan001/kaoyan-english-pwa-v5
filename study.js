@@ -1,7 +1,7 @@
 import{loadVocabulary,findWord,allWords,getState,saveState}from'./vocabulary-manager.js';
 import{getPool}from'./learning-pool.js';
 import{rate,dueWords,wrongWords}from'./review-manager.js';
-import{rootHint,keyPoint,nearWords,cleanTranslation,coreTranslation}from'./knowledge.js?v=5.6.24';
+import{rootHint,keyPoint,nearWords,cleanTranslation,coreTranslation}from'./knowledge.js?v=5.6.25';
 import{buildChoiceOptions}from'./quiz-options.js';
 import{bindInteractiveEnglish,makeInteractiveText,sentenceAudioButton}from'./interactive-english.js?v=5.6.17';
 import{playPronunciation,warmSpeechVoices}from'./audio-engine.js?v=5.6.23';

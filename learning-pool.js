@@ -6,7 +6,7 @@ function sourceFor(mode){return mode==='smart'?'all':mode}
 function markDrawn(words,state=getState()){words.forEach(word=>{const w=findWord(word);state.records[word]={...(state.records[word]||{}),drawn:true,source:w?.source||'kaoyan',round:state.rounds[w?.source==='gaokao'?'gaokao':'kaoyan']||1}});saveState(state)}
 export function getPool(){const p=read();if(p&&p.date===today())return p;return generatePool()}
 export function generatePool(){const settings=getSettings(),state=getState(),items=[];for(const[source,count]of sources(settings,state)){for(const w of shuffle(candidates(source,state)).slice(0,count)){if(!items.includes(w.word))items.push(w.word)}}for(const w of shuffle(candidates('all',state))){if(items.length>=settings.daily)break;if(!items.includes(w.word))items.push(w.word)}markDrawn(items,state);const pool={date:today(),mode:settings.mode,items,completed:[],locked:[]};save(pool);return pool}
-export function save(pool){localStorage.setItem(KEYS.pool,JSON.stringify(pool));return pool}
+export function save(pool){pool.updatedAt=Date.now();localStorage.setItem(KEYS.pool,JSON.stringify(pool));return pool}
 export function remove(word){const p=getPool();if(p.locked?.includes(word))return p;p.items=p.items.filter(x=>x!==word);return save(p)}
 export function toggleLock(word){const p=getPool();p.locked=p.locked||[];p.locked=p.locked.includes(word)?p.locked.filter(x=>x!==word):[...p.locked,word];return save(p)}
 export function add(word){const p=getPool();if(findWord(word)&&!p.items.includes(word)){p.items.push(word);markDrawn([word])}return save(p)}

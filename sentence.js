@@ -266,6 +266,7 @@ function saveAnalysis(){
 
 $('#importClipboard').onclick=importClipboard;
 $('#openSavedSentences').onclick=()=>{$('#savedSentencesModal').classList.remove('hidden');renderSavedSentenceList()};
+$('#manualNew').onclick=()=>{$('#originalSentence').focus();$('#originalSentence').scrollIntoView({behavior:'smooth',block:'center'})};
 $('#closeSavedSentences').onclick=()=>$('#savedSentencesModal').classList.add('hidden');
 $('#clearImport').onclick=clearForm;
 $('#copyGptTemplate').onclick=copyGptTemplate;

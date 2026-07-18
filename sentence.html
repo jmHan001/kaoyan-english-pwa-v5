@@ -7,7 +7,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="memory.css">
-<link rel="stylesheet" href="enhancements.css?v=5.6.22">
+<link rel="stylesheet" href="enhancements.css?v=5.6.25">
 <link rel="stylesheet" href="interactive-english.css?v=5.6.17">
 <script src="theme.js" defer></script>
 </head>
@@ -29,6 +29,11 @@
 <div class="toolbar" style="margin-top:12px">
 <button class="btn" id="importClipboard">从剪贴板导入</button>
 <button class="btn secondary" id="openSavedSentences">已存句子 <span id="savedSentenceCount">0</span></button>
+<button class="btn secondary" id="manualNew">手动新建</button>
+</div>
+<details class="sentence-tools">
+<summary>GPT 指令与辅助工具</summary>
+<div class="toolbar" style="margin-top:12px">
 <button class="btn secondary" id="clearImport">清空导入内容</button>
 <button class="btn secondary" id="copyGptTemplate">复制 GPT 一键指令</button>
 <button class="btn secondary" id="sample">填入示例</button>
@@ -42,6 +47,7 @@
 <button class="btn accent" id="copyGptGuide">复制给 GPT 的指令</button>
 </div>
 <textarea class="field gpt-prompt-box" id="gptPromptBox" rows="10" readonly aria-label="给 GPT 的一键复制指令"></textarea>
+</details>
 <div id="importNotice" class="notice hidden"></div>
 <div id="duplicateNotice" class="notice hidden"></div>
 <div class="sentence-form">
@@ -59,6 +65,9 @@
 <textarea class="field" id="mainClause" rows="3" placeholder="主语 + 谓语 + 宾语"></textarea>
 <label class="sentence-label" for="structureAnalysis">结构分析</label>
 <textarea class="field" id="structureAnalysis" rows="6" placeholder="- 时间状语：&#10;- 定语从句："></textarea>
+<details class="advanced-sentence-fields" style="grid-column:1/-1;width:100%">
+<summary>更多资料：词汇、翻译、笔记与测试</summary>
+<div class="sentence-form" style="margin-top:12px">
 <label class="sentence-label" for="vocabulary">核心词汇</label>
 <textarea class="field" id="vocabulary" rows="4" placeholder="- word：中文释义"></textarea>
 <label class="sentence-label" for="translation">参考翻译</label>
@@ -75,6 +84,8 @@
 <input class="field" id="masteryStatus" placeholder="completed">
 <label class="sentence-label" for="unrecognized">未识别内容</label>
 <textarea class="field" id="unrecognized" rows="4" placeholder="无法识别的内容会放在这里"></textarea>
+</div>
+</details>
 </div>
 <div class="toolbar" style="margin-top:12px">
 <button class="btn secondary" id="previewImport">解析预览</button>
@@ -100,7 +111,7 @@
 </main>
 <div class="modal hidden" id="modal">
 <div class="modal-card">
-<button class="iconbtn" style="float:right" id="close">×</button>
+<button class="iconbtn" style="float:right" id="close" aria-label="关闭单词详情">×</button>
 <h2 id="mword">
 </h2>
 <p id="mmeaning">
@@ -125,7 +136,7 @@
 </div>
 <div class="modal hidden" id="savedSentencesModal">
 <div class="modal-card">
-<button class="iconbtn" style="float:right" id="closeSavedSentences">×</button>
+<button class="iconbtn" style="float:right" id="closeSavedSentences" aria-label="关闭已存句子">×</button>
 <h2>已存句子</h2>
 <p class="muted" id="savedSentencesMeta">按保存时间排序</p>
 <div id="savedSentenceList" class="sentence-history">
@@ -133,7 +144,7 @@
 </div>
 </div>
 </div>
-<script type="module" src="sentence.js?v=5.6.22">
+<script type="module" src="sentence.js?v=5.6.25">
 </script>
 </body>
 </html>

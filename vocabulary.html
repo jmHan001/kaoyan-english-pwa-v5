@@ -49,7 +49,7 @@
 <strong>${w.word}</strong>
 <small>${w.translation||''}</small>
 </div>
-<div class="row-actions"><button class="iconbtn" data-speak-word="${w.word}" title="播放发音">▶</button><span class="chip">${w.source==='both'?'共有':w.source==='gaokao'?'高考':'考研'}</span></div>
-</div>`).join('')||'<div class="empty">没有匹配结果</div>'}$('#search').oninput=()=>{page=1;render()};$('#filter').onchange=()=>{page=1;render()};$('#more').onclick=()=>{page++;render()};$('#export').onclick=exportAll;$('#import').onchange=e=>importAll(e.target.files[0]);document.addEventListener('click',e=>{const word=e.target.closest?.('[data-speak-word]')?.dataset.speakWord;if(word)speak(word)});render();</script>
+<div class="row-actions"><button class="iconbtn" data-speak-word="${w.word}" title="播放发音" aria-label="播放 ${w.word} 的发音">▶</button><span class="chip">${w.source==='both'?'共有':w.source==='gaokao'?'高考':'考研'}</span></div>
+</div>`).join('')||'<div class="empty">没有匹配结果</div>';$('#more').classList.toggle('hidden',page*100>=x.length)}$('#search').oninput=()=>{page=1;render()};$('#filter').onchange=()=>{page=1;render()};$('#more').onclick=()=>{page++;render()};$('#export').onclick=exportAll;$('#import').onchange=e=>importAll(e.target.files[0]);document.addEventListener('click',e=>{const word=e.target.closest?.('[data-speak-word]')?.dataset.speakWord;if(word)speak(word)});render();</script>
 </body>
 </html>
