@@ -4,20 +4,37 @@ const fallback=[
 ];
 let words=[],wordMap=new Map();
 const read=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}};
+const normalizedWord=value=>String(value||'').trim().toLowerCase().replace(/\s+/g,' ').replace(/’/g,"'");
+function sanitizeVocabularyValue(value){
+ if(typeof value==='string')return value.replace(/[\u00ad\u200b\ue000-\uf8ff]/gi,'');
+ if(Array.isArray(value))return value.map(sanitizeVocabularyValue);
+ if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).map(([key,item])=>[key,sanitizeVocabularyValue(item)]));
+ return value;
+}
+function mergeWord(primary,fallback,source){
+ const merged={...fallback,...primary,source};
+ for(const key of ['translation','us','uk','phrases','sentences'])if(!merged[key]&&fallback?.[key])merged[key]=fallback[key];
+ return merged;
+}
+function uniqueSource(items,source){
+ const map=new Map();
+ for(const raw of items||[]){const item=sanitizeVocabularyValue(raw),key=normalizedWord(item?.word);if(!key)continue;const old=map.get(key);map.set(key,old?mergeWord(old,item,source):{...item,word:String(item.word).trim(),source})}
+ return map;
+}
 export function getSettings(){return read(KEYS.settings,{mode:'smart',daily:20})}
 export function saveSettings(v){localStorage.setItem(KEYS.settings,JSON.stringify(v))}
 export function getState(){return read(KEYS.state,{records:{},rounds:{gaokao:1,kaoyan:1},streak:0,lastStudyDate:'',history:{}})}
 export function saveState(v){localStorage.setItem(KEYS.state,JSON.stringify(v))}
 export async function loadVocabulary(){
  const [g,k]=await Promise.all([fetch('./data/gaokao.json').then(r=>r.ok?r.json():[]).catch(()=>[]),fetch('./data/kaoyan.json').then(r=>r.ok?r.json():[]).catch(()=>[])]);
- const map=new Map();
- [...g.map(x=>({...x,source:'gaokao'})),...k.map(x=>({...x,source:'kaoyan'}))].forEach(x=>{const key=x.word.toLowerCase();const old=map.get(key);map.set(key,old?{...old,translation:old.translation||x.translation,source:'both'}:x)});
- words=[...map.values()]; if(!words.length) words=fallback;wordMap=new Map(words.map(word=>[word.word.toLowerCase(),word]));return words;
+ const gaokao=uniqueSource(g,'gaokao'),kaoyan=uniqueSource(k,'kaoyan'),map=new Map(gaokao);
+ for(const [key,item]of kaoyan){const old=map.get(key);map.set(key,old?mergeWord(old,item,'both'):item)}
+ words=[...map.values()]; if(!words.length) words=fallback;wordMap=new Map(words.map(word=>[normalizedWord(word.word),word]));return words;
 }
 export function allWords(){return words}
 const irregular={children:'child',men:'man',women:'woman',people:'person',teeth:'tooth',feet:'foot',mice:'mouse',geese:'goose',went:'go',gone:'go',done:'do',did:'do',seen:'see',saw:'see',made:'make',taken:'take',took:'take',given:'give',gave:'give',known:'know',knew:'know',thought:'think',bought:'buy',brought:'bring',found:'find',felt:'feel',left:'leave',kept:'keep',held:'hold',written:'write',wrote:'write',read:'read'};
 function wordForms(value){const word=String(value||'').toLowerCase().replace(/^[^a-z]+|[^a-z]+$/g,'').replace(/['’]s$/,'');const out=[word],add=x=>{if(x&&x.length>1&&!out.includes(x))out.push(x)};if(irregular[word])add(irregular[word]);if(word.length>4&&word.endsWith('ies'))add(`${word.slice(0,-3)}y`);if(word.length>4&&word.endsWith('ves')){add(`${word.slice(0,-3)}f`);add(`${word.slice(0,-3)}fe`)}if(word.length>4&&word.endsWith('es')){add(word.slice(0,-2));add(word.slice(0,-1))}else if(word.length>3&&word.endsWith('s'))add(word.slice(0,-1));if(word.length>5&&word.endsWith('ied'))add(`${word.slice(0,-3)}y`);if(word.length>4&&word.endsWith('ed')){const stem=word.slice(0,-2);add(stem);add(`${stem}e`);if(stem.at(-1)===stem.at(-2))add(stem.slice(0,-1))}if(word.length>5&&word.endsWith('ing')){const stem=word.slice(0,-3);add(stem);add(`${stem}e`);if(stem.at(-1)===stem.at(-2))add(stem.slice(0,-1))}return out}
-export function findWord(s){for(const form of wordForms(s)){const found=wordMap.get(form);if(found)return found}return undefined}
+export function findWord(s){const direct=wordMap.get(normalizedWord(s));if(direct)return direct;for(const form of wordForms(s)){const found=wordMap.get(form);if(found)return found}return undefined}
 export function candidates(source,state=getState()){return words.filter(w=>(source==='all'||w.source===source||w.source==='both')&&!state.records[w.word]?.drawn)}
 export function migrateLegacy(){
  if(localStorage.getItem(KEYS.migration)) return {done:true};

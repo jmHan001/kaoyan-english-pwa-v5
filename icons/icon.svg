@@ -1,5 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#26382d"/>
-  <path d="M145 118h222v60H205v48h137v58H205v50h168v60H145z" fill="#f5f1e8"/>
-  <circle cx="367" cy="145" r="28" fill="#e2774f"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="拾词">
+  <rect width="512" height="512" rx="104" fill="#0b1a42"/>
+  <path d="M108 148c56-20 105-9 140 18v200c-37-27-83-36-140-19z" fill="#fbfaf8"/>
+  <path d="M264 166c35-27 84-38 140-18v199c-57-17-103-8-140 19z" fill="#fbfaf8"/>
+  <rect x="251" y="166" width="10" height="200" rx="5" fill="#655fd7"/>
+  <circle cx="382" cy="132" r="26" fill="#655fd7"/>
 </svg>

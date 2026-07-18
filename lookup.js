@@ -16,9 +16,14 @@ function phraseHtml(p){
   return`<p><strong>${makeInteractiveText(p.phrase)}</strong>　${p.translation}</p>`;
 }
 
+function asList(value,key){
+  if(Array.isArray(value))return value;
+  return value&&typeof value==='object'&&value[key]?[value]:[];
+}
+
 function show(w){
   current=w;
-  const rec=getState().records[w.word]||{},examples=w.sentences||[],phrases=w.phrases||[],near=nearWords(w,allWords());
+  const rec=getState().records[w.word]||{},examples=asList(w.sentences,'sentence'),phrases=asList(w.phrases,'phrase'),near=nearWords(w,allWords());
   $('#detail').classList.remove('hidden');
   $('#detail').innerHTML=`<div class="toolbar"><div style="flex:1"><h2 class="word" data-lookup-word="${w.word}" style="font-size:clamp(2.4rem,10vw,5rem)">${w.word}</h2><p class="phonetic">美 /${w.us||'暂无'}/　英 /${w.uk||'暂无'}/</p></div><span class="chip">连续答对 ${rec.correctStreak||0}/3</span></div><h3>完整释义</h3><p class="meaning">${cleanTranslation(w)}</p><h3>高频考点</h3><p class="exam-point">${keyPoint(w)}</p><h3>词组搭配</h3><div>${phrases.length?phrases.map(phraseHtml).join(''):'暂无搭配数据'}</div><h3>对应例句</h3><div>${examples.length?examples.map(x=>`<div class="example-block"><p class="example">${sentenceAudioButton(x.sentence)}${makeInteractiveText(x.sentence,{highlight:[w.word]})}</p><p class="example-cn">${x.translation||''}</p></div>`).join(''):'暂无例句'}</div><h3>词根提示</h3><p>${rootHint(w.word)}</p><h3>近义/相关词</h3>${relatedWordHtml(near)}<div class="toolbar"><button class="btn secondary" data-speak="en-US">美音</button><button class="btn secondary" data-speak="en-GB">英音</button><button class="btn" id="addNow">加入今日学习池</button></div>`;
   $('#addNow').onclick=()=>add(w.word);

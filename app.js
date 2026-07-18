@@ -4,7 +4,7 @@ import{rate,dueWords,wrongWords}from'./review-manager.js';
 import{stats}from'./stats.js';
 import{rootHint,keyPoint,nearWords,cleanTranslation,coreTranslation}from'./knowledge.js?v=5.6.25';
 import{getSyncConfig,isConfigured,startAutoSync}from'./cloud-sync.js?v=5.6.25';
-import{buildChoiceOptions}from'./quiz-options.js';
+import{buildChoiceOptions}from'./quiz-options.js?v=5.7.3';
 import{bindInteractiveEnglish,makeInteractiveText,sentenceAudioButton}from'./interactive-english.js?v=5.6.17';
 import{playPronunciation}from'./audio-engine.js?v=5.6.17';
 

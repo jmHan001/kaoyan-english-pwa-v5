@@ -22,13 +22,7 @@ function addDistractors(target,picked,seenWords,seenTranslations,items,blockedWo
 }
 
 export function shuffleOptions(items,random=Math.random){
-  const a=[];
-  for(let i=0;i<(items?.length||0);i++)a.push(items[i]);
-  for(let i=a.length-1;i;i--){
-    const j=Math.floor(random()*(i+1));
-    [a[i],a[j]]=[a[j],a[i]];
-  }
-  return a;
+  return Array.from(items||[]).sort(()=>random()-.5);
 }
 
 function sampledOptions(items,random=Math.random,limit=96){
