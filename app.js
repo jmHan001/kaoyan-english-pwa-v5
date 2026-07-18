@@ -1,19 +1,20 @@
 import{loadVocabulary,findWord,allWords,getSettings,saveSettings,getState,saveState,migrateLegacy,exportAll}from'./vocabulary-manager.js';
-import{getPool,remove,replace,toggleLock,add,fill,resize,extend}from'./learning-pool.js?v=5.7.9';
-import{rate,dueWords,wrongWords,restoreSlainWord}from'./review-manager.js?v=5.7.5';
-import{stats}from'./stats.js?v=5.7.5';
+import{getPool,remove,replace,toggleLock,add,fill,resize,extend}from'./learning-pool.js?v=5.8.0';
+import{rate,dueWords,wrongWords,restoreSlainWord}from'./review-manager.js?v=5.8.0';
+import{stats}from'./stats.js?v=5.8.0';
 import{rootHint,keyPoint,nearWords,cleanTranslation,coreTranslation}from'./knowledge.js?v=5.6.25';
-import{getSyncConfig,isConfigured,startAutoSync}from'./cloud-sync.js?v=5.7.9';
+import{getSyncConfig,isConfigured,startAutoSync}from'./cloud-sync.js?v=5.8.0';
 import{buildChoiceOptions}from'./quiz-options.js?v=5.7.3';
 import{bindInteractiveEnglish,makeInteractiveText,sentenceAudioButton}from'./interactive-english.js?v=5.6.17';
 import{playPronunciation}from'./audio-engine.js?v=5.6.17';
+import{localDateKey}from'./date-utils.js?v=5.8.0';
 
 let pool,index=0,queue=[],reviewMode=false,currentOptions=[],answered=false,quiz=null,quizOptions=[],recentDistractors=[],studyOpen=false,learnedView='learning';
 const reviewOnlyIndexes=new Set();
 const $=s=>document.querySelector(s),label={gaokao:'高考词',kaoyan:'考研词',both:'高考与考研共有'};
 const readJson=(key,fallback=null)=>{try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}};
 const formatTime=value=>value?new Date(value).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'尚未同步';
-const today=()=>new Date().toISOString().slice(0,10);
+const today=localDateKey;
 
 function shuffle(a){a=[...a];for(let i=a.length-1;i;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function wordsFromList(words){const seen=new Set(),items=[];for(const word of words||[]){const item=typeof word==='string'?findWord(word):word;if(item&&!seen.has(item.word)){seen.add(item.word);items.push(item)}}return items}

@@ -8,7 +8,8 @@ globalThis.localStorage={
 };
 
 const{mergeSnapshots,syncSummary}=await import('../cloud-sync.js');
-const today=new Date().toISOString().slice(0,10);
+const{localDateKey}=await import('../date-utils.js');
+const today=localDateKey();
 const local={version:1,savedAt:2,data:{
   ky5_settings:{mode:'gaokao',daily:30},
   ky5_state:{records:{learned:{todayDoneDate:today,lastSeen:2,drawn:true}},history:{},rounds:{gaokao:1,kaoyan:1}},

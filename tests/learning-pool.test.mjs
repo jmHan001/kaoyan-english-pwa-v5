@@ -19,10 +19,11 @@ manager.saveSettings({mode:'smart',daily:2});
 localStorage.setItem(manager.KEYS.pool,JSON.stringify({date:new Date().toISOString().slice(0,10),mode:'smart',items:[],completed:[],locked:[]}));
 
 const poolManager=await import(`../learning-pool.js?test=${Date.now()}`);
+const{localDateKey}=await import('../date-utils.js');
 const recovered=poolManager.getPool();
 assert.equal(recovered.items.length,2,'an empty synced pool should rebuild automatically');
 
-const today=new Date().toISOString().slice(0,10),state=manager.getState();
+const today=localDateKey(),state=manager.getState();
 state.records.alpha={drawn:true,source:'gaokao',round:1,todayDoneDate:today,correctStreak:1};
 state.records.delta={drawn:true,source:'kaoyan',round:1};
 manager.saveState(state);

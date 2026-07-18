@@ -1,10 +1,11 @@
 import{loadVocabulary,findWord,allWords,getState,saveState}from'./vocabulary-manager.js';
-import{getPool}from'./learning-pool.js?v=5.7.9';
-import{rate,dueWords,wrongWords,slayWord}from'./review-manager.js?v=5.7.5';
+import{getPool}from'./learning-pool.js?v=5.8.0';
+import{rate,dueWords,wrongWords,slayWord}from'./review-manager.js?v=5.8.0';
 import{rootHint,keyPoint,nearWords,cleanTranslation,coreTranslation}from'./knowledge.js?v=5.6.25';
 import{buildChoiceOptions}from'./quiz-options.js?v=5.7.3';
 import{bindInteractiveEnglish,makeInteractiveText,sentenceAudioButton}from'./interactive-english.js?v=5.6.17';
 import{playPronunciation,warmSpeechVoices}from'./audio-engine.js?v=5.6.23';
+import{localDateKey}from'./date-utils.js?v=5.8.0';
 
 const $=s=>document.querySelector(s),label={gaokao:'高考词',kaoyan:'考研词',both:'高考与考研共有'};
 let pool,queue=[],index=0,currentOptions=[],recentDistractors=[],answered=false,reviewMode=false,quizMode=false,quizScore=0,quizResults=[],quizSaved=false;
@@ -12,7 +13,7 @@ const reviewOnlyIndexes=new Set();
 
 const params=new URLSearchParams(location.search);
 const mode=params.get('mode')||'today';
-const today=()=>new Date().toISOString().slice(0,10);
+const today=localDateKey;
 const shuffle=a=>{a=[...a];for(let i=a.length-1;i;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function current(){return findWord(queue[index])}
 function wordsFromList(words){const seen=new Set(),items=[];for(const word of words||[]){const item=typeof word==='string'?findWord(word):word;if(item&&!seen.has(item.word)){seen.add(item.word);items.push(item)}}return items}
