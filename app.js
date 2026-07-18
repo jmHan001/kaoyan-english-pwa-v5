@@ -1,5 +1,5 @@
 import{loadVocabulary,findWord,allWords,getSettings,saveSettings,getState,saveState,migrateLegacy,exportAll}from'./vocabulary-manager.js';
-import{getPool,remove,replace,toggleLock,add,fill,resize,extend}from'./learning-pool.js';
+import{getPool,remove,replace,toggleLock,add,fill,resize,extend}from'./learning-pool.js?v=5.7.7';
 import{rate,dueWords,wrongWords,restoreSlainWord}from'./review-manager.js?v=5.7.5';
 import{stats}from'./stats.js?v=5.7.5';
 import{rootHint,keyPoint,nearWords,cleanTranslation,coreTranslation}from'./knowledge.js?v=5.6.25';
