@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="memory.css">
 <link rel="stylesheet" href="enhancements.css?v=5.6.25">
-<link rel="stylesheet" href="choices.css?v=5.6.23">
+<link rel="stylesheet" href="choices.css?v=5.7.5">
 <link rel="stylesheet" href="interactive-english.css?v=5.6.17">
 <link rel="stylesheet" href="premium-theme.css?v=5.7.4">
 <script src="theme.js?v=5.7.0" defer></script>
@@ -26,7 +26,10 @@
 <a class="btn secondary" href="index.html" id="backHome">回主页</a>
 </header>
 <section class="study-card card" id="card">
+<div class="study-card-tools">
+<button class="slay-toggle" id="slayToggle" type="button" aria-label="斩掉当前单词" title="斩掉当前单词">斩</button>
 <button class="favorite-toggle" id="favoriteToggle" type="button" aria-label="收藏重点单词" title="收藏重点单词">☆</button>
+</div>
 <div>
 <p class="phonetic" id="source"></p>
 <div class="word-line"><h2 class="word" id="word">加载中</h2><span class="memory-badge" id="memoryBadge">连续正确 0/3</span></div>
@@ -53,6 +56,17 @@
 </section>
 <div class="notice hidden" id="studyNotice"></div>
 </main>
-<script type="module" src="study.js?v=5.7.3"></script>
+<div class="modal hidden" id="slayModal">
+<div class="modal-card compact-modal slay-modal-card">
+<span class="section-kicker">斩词</span>
+<h2 id="slayWord">当前单词</h2>
+<p class="muted">斩掉后视为已掌握，不再进入今日待背、错词回炉和到期复习。以后可以在主页“学习记录”中恢复。</p>
+<div class="toolbar slay-confirm-actions">
+<button class="btn secondary" id="cancelSlay" type="button">取消</button>
+<button class="btn danger" id="confirmSlay" type="button">确认斩词</button>
+</div>
+</div>
+</div>
+<script type="module" src="study.js?v=5.7.5"></script>
 </body>
 </html>

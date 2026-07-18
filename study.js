@@ -1,6 +1,6 @@
 import{loadVocabulary,findWord,allWords,getState,saveState}from'./vocabulary-manager.js';
 import{getPool}from'./learning-pool.js';
-import{rate,dueWords,wrongWords}from'./review-manager.js';
+import{rate,dueWords,wrongWords,slayWord}from'./review-manager.js?v=5.7.5';
 import{rootHint,keyPoint,nearWords,cleanTranslation,coreTranslation}from'./knowledge.js?v=5.6.25';
 import{buildChoiceOptions}from'./quiz-options.js?v=5.7.3';
 import{bindInteractiveEnglish,makeInteractiveText,sentenceAudioButton}from'./interactive-english.js?v=5.6.17';
@@ -23,14 +23,15 @@ function makeOptions(word){const options=buildChoiceOptions(word,[learnedOptionW
 function optionText(value){const text=String(value||'暂无释义').replace(/\s+/g,' ').trim();return text.length>82?`${text.slice(0,82)}…`:text}
 function chunks(word){const parts=word.match(/[^aeiouy]*[aeiouy]+(?:[^aeiouy](?=[^aeiouy]*[aeiouy])|[^aeiouy]*$)/gi);return parts?.length>1?parts.join(' · '):word}
 function favoriteWords(){const state=getState();return Object.entries(state.records||{}).filter(([,record])=>record?.favorite).map(([word])=>word)}
-function learnedWords(view='all'){const state=getState();return Object.entries(state.records||{}).filter(([,record])=>{const known=record?.drawn||record?.lastSeen||record?.level||record?.errors||record?.favorite,mastered=record?.tailStage||record?.level>=4;return known&&(view==='all'||(view==='mastered'?mastered:!mastered))}).sort((a,b)=>(b[1].lastSeen||0)-(a[1].lastSeen||0)).map(([word])=>word)}
-function quizCandidates(){const seen=new Set(),items=[];for(const word of pool?.items||[]){const w=findWord(word);if(w&&!seen.has(w.word)){seen.add(w.word);items.push(w.word)}}for(const word of [...wrongWords(),...dueWords()]){const w=findWord(word);if(w&&!seen.has(w.word)){seen.add(w.word);items.push(w.word)}}return items}
+function learnedWords(view='all'){const state=getState();return Object.entries(state.records||{}).filter(([,record])=>{const known=record?.drawn||record?.lastSeen||record?.level||record?.errors||record?.favorite,mastered=record?.tailStage||record?.level>=4;return !record?.slain&&known&&(view==='all'||(view==='mastered'?mastered:!mastered))}).sort((a,b)=>(b[1].lastSeen||0)-(a[1].lastSeen||0)).map(([word])=>word)}
+function quizCandidates(){const state=getState(),seen=new Set(),items=[];for(const word of pool?.items||[]){const w=findWord(word);if(w&&!state.records[w.word]?.slain&&!seen.has(w.word)){seen.add(w.word);items.push(w.word)}}for(const word of [...wrongWords(),...dueWords()]){const w=findWord(word);if(w&&!state.records[w.word]?.slain&&!seen.has(w.word)){seen.add(w.word);items.push(w.word)}}return items}
 function quizBook(){try{return JSON.parse(localStorage.getItem('ky5_quiz')||'{}')}catch{return{}}}
 function saveQuizAttempt(){if(!quizMode||quizSaved)return;const book=quizBook(),wrong=quizResults.filter(x=>!x.correct),day=today();book[day]={date:day,attempts:[...(book[day]?.attempts||[]),{id:crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,at:Date.now(),score:quizScore,total:quizResults.length,wrong:wrong.map(x=>x.word)}]};localStorage.setItem('ky5_quiz',JSON.stringify(book));quizSaved=true}
 function setFavorite(word,value){if(!word)return;const state=getState(),item=findWord(word),old=state.records[word]||{};state.records[word]={...old,source:item?.source||old.source,drawn:old.drawn||!!item,favorite:!!value};saveState(state);updateFavoriteButton()}
 function updateFavoriteButton(){const w=current(),button=$('#favoriteToggle');if(!button)return;if(!w){button.classList.add('hidden');return}const active=!!getState().records[w.word]?.favorite;button.classList.remove('hidden');button.classList.toggle('active',active);button.textContent=active?'★':'☆';button.title=active?'取消收藏重点单词':'收藏重点单词';button.setAttribute('aria-pressed',String(active))}
+function updateSlayButton(){const button=$('#slayToggle');if(!button)return;button.classList.toggle('hidden',quizMode||!current())}
 function todayDone(word){return getState().records[word]?.todayDoneDate===today()}
-function setPoolCompleted(word,done){if(!word)return;pool=getPool();const completed=new Set(pool.completed||[]);if(done)completed.add(word);else completed.delete(word);pool.completed=[...completed];localStorage.setItem('ky5_pool',JSON.stringify(pool));const state=getState(),item=findWord(word),old=state.records[word]||{},next={...old,source:item?.source||old.source};if(done)next.todayDoneDate=today();else if(next.todayDoneDate===today())delete next.todayDoneDate;state.records[word]=next;saveState(state)}
+function setPoolCompleted(word,done){if(!word)return;pool=getPool();const completed=new Set(pool.completed||[]);if(done)completed.add(word);else completed.delete(word);pool.completed=[...completed];localStorage.setItem('ky5_pool',JSON.stringify(pool));const state=getState(),item=findWord(word),old=state.records[word]||{},next={...old,source:item?.source||old.source};if(done){next.todayDoneDate=today();if(old.slain)next.slainCompletedToday=true}else if(next.todayDoneDate===today())delete next.todayDoneDate;state.records[word]=next;saveState(state)}
 function repairTodayPool(){if(!pool?.items?.length)return;const completed=new Set(pool.completed||[]);let changed=false;for(const word of pool.items){if(todayDone(word)&&!completed.has(word)){completed.add(word);changed=true}}if(changed){pool.completed=[...completed];localStorage.setItem('ky5_pool',JSON.stringify(pool))}}
 function relatedWordHtml(words){return words.length?`<div class="related-list">${words.map(x=>`<button class="related-word" type="button" data-lookup-word="${x.word}"><strong>${x.word}</strong><small>${cleanTranslation(x)}</small></button>`).join('')}</div>`:'<p>暂无可靠近义关联</p>'}
 function renderChoices(word){currentOptions=makeOptions(word);const wrap=$('#choices');wrap.innerHTML='';currentOptions.forEach((item,i)=>{const button=document.createElement('button');button.type='button';button.className='choice-option';button.dataset.choice=String(i);const key=document.createElement('span');key.className='choice-key';key.textContent=String.fromCharCode(65+i);const text=document.createElement('span');text.textContent=optionText(coreTranslation(item));button.append(key,text);wrap.append(button)})}
@@ -70,12 +71,14 @@ function render(){
   $('#memoryBadge').classList.toggle('tail',!!rec.tailStage);
   $('#phonetic').textContent='';
   updateFavoriteButton();
+  updateSlayButton();
   renderChoices(w);
   $('#syllable').textContent=`拆着记：${chunks(w.word)}`;
   const examples=Array.isArray(w.sentences)?w.sentences:(w.sentences?.sentence?[w.sentences]:[]),phrases=Array.isArray(w.phrases)?w.phrases:(w.phrases?.phrase?[w.phrases]:[]),near=nearWords(w,allWords());
   $('#example').innerHTML=examples[0]?.sentence?`${sentenceAudioButton(examples[0].sentence)}${makeInteractiveText(examples[0].sentence,{highlight:[w.word]})}`:'暂无可靠例句。';
   $('#exampleCn').textContent=examples[0]?.translation||'';
   $('#wordKnowledge').innerHTML=`<div class="detail-grid"><section class="detail-section"><h3>高频考点</h3><p class="exam-point">${keyPoint(w)}</p></section><section class="detail-section"><h3>词组搭配</h3>${phrases.length?phrases.slice(0,4).map(p=>`<p><strong>${makeInteractiveText(p.phrase)}</strong>　${p.translation}</p>`).join(''):'<p>暂无搭配数据</p>'}</section><section class="detail-section"><h3>词根提示</h3><p>${rootHint(w.word)}</p></section><section class="detail-section"><h3>近义/相关词</h3>${relatedWordHtml(near)}</section><section class="detail-section"><h3>更多例句</h3>${examples.slice(1,3).map(x=>`<p class="example">${sentenceAudioButton(x.sentence)}${makeInteractiveText(x.sentence,{highlight:[w.word]})}</p><p class="example-cn">${x.translation||''}</p>`).join('')||'<p>暂无更多例句</p>'}</section></div>`;
+  void playPronunciation(w.word,'en-US',{preferHuman:false,rate:0.9,pitch:1.08});
 }
 
 function finishChoice(correct,selectedIndex=-1){
@@ -96,7 +99,7 @@ function finishChoice(correct,selectedIndex=-1){
   $('#reveal').classList.add('hidden');
   $('#nextWord').classList.remove('hidden');
   const feedback=$('#choiceFeedback');
-  if(correct)void playPronunciation(w.word,'en-US',{preferHuman:false,rate:0.9,pitch:1.08});
+  void playPronunciation(w.word,'en-US',{preferHuman:false,rate:0.9,pitch:1.08});
   feedback.textContent=reviewOnly?'这是右滑回看的单词，本次只作回看，不计入连续正确和今日完成。':(quizMode?(correct?`小测答对，已即时朗读。当前得分 ${quizScore}/${quizResults.length}。`:'小测答错，正确次数已清零，并加入错词回炉。'):(correct?(record.correctStreak>=3?'回答正确，已连续正确 3 次，标记为已掌握。':`回答正确，连续正确 ${record.correctStreak}/3。`):'本次未计入今日完成，连续正确已清零，并加入本轮回炉。'));
   feedback.className=`choice-feedback ${correct?'correct':'wrong'}`;
   $('#memoryBadge').textContent=record.tailStage?'已连续正确 3 次':`连续正确 ${record.correctStreak||0}/3`;
@@ -104,6 +107,9 @@ function finishChoice(correct,selectedIndex=-1){
 }
 
 function goPreviousWord(){if(index<=0){$('#studyNotice').textContent='已经是本组第一个单词。';$('#studyNotice').classList.remove('hidden');return}index--;reviewOnlyIndexes.add(index);render();$('#studyNotice').textContent='已回到上一个单词：这次回答只用于回看，不计入正确次数。';$('#studyNotice').classList.remove('hidden');const card=$('#card');card.classList.remove('swipe-back');void card.offsetWidth;card.classList.add('swipe-back')}
+
+function openSlayModal(){const w=current();if(!w||quizMode)return;$('#slayWord').textContent=w.word;$('#slayModal').classList.remove('hidden')}
+function confirmSlay(){const w=current();if(!w)return;const wasDone=(pool?.completed||[]).includes(w.word)||todayDone(w.word);slayWord(w.word,w.source);if(pool?.items?.includes(w.word)&&!wasDone)setPoolCompleted(w.word,true);const before=queue.slice(0,index),after=queue.slice(index+1).filter(word=>word!==w.word);queue=[...before,...after];reviewOnlyIndexes.clear();$('#slayModal').classList.add('hidden');$('#studyNotice').textContent=`已斩 ${w.word}，不会再进入复习；可在学习记录中恢复。`;$('#studyNotice').classList.remove('hidden');render()}
 
 function buildQueue(){
   pool=getPool();
@@ -119,7 +125,7 @@ function buildQueue(){
 
 await loadVocabulary();
 bindInteractiveEnglish();
-void warmSpeechVoices();
+await warmSpeechVoices();
 queue=buildQueue().filter(word=>findWord(word));
 if(!queue.length){
   finishStudy(mode==='today'?'今日任务已完成，可以做小测或加背。':mode==='quiz'?'小测暂无可用单词。先背几个词，再来验收。':'本组暂无可背单词。');
@@ -136,6 +142,9 @@ document.addEventListener('click',e=>{
 $('#reveal').onclick=()=>finishChoice(false);
 $('#nextWord').onclick=()=>{index++;render()};
 $('#favoriteToggle').onclick=()=>{const w=current();if(w)setFavorite(w.word,!getState().records[w.word]?.favorite)};
+$('#slayToggle').onclick=openSlayModal;
+$('#cancelSlay').onclick=()=>$('#slayModal').classList.add('hidden');
+$('#confirmSlay').onclick=confirmSlay;
 let touchStartX=0,touchStartY=0,touchStartAt=0;
 $('#card').addEventListener('touchstart',e=>{const t=e.changedTouches?.[0];if(!t)return;touchStartX=t.clientX;touchStartY=t.clientY;touchStartAt=Date.now()},{passive:true});
 $('#card').addEventListener('touchend',e=>{const t=e.changedTouches?.[0];if(!t)return;const dx=t.clientX-touchStartX,dy=t.clientY-touchStartY,dt=Date.now()-touchStartAt;if(dx>70&&Math.abs(dy)<55&&dt<800)goPreviousWord()},{passive:true});

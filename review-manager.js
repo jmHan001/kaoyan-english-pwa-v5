@@ -11,6 +11,19 @@ if(s.lastStudyDate!==d){s.streak=(s.lastStudyDate&&Date.now()-new Date(s.lastStu
 s.lastStudyDate=d}saveState(s);
 return s.records[word]}
 export function dueWords(){const s=getState();
-return Object.entries(s.records).filter(([,r])=>r.due&&r.due<=Date.now()).sort((a,b)=>a[1].due-b[1].due).map(([word])=>word)}
+return Object.entries(s.records).filter(([,r])=>!r.slain&&r.due&&r.due<=Date.now()).sort((a,b)=>a[1].due-b[1].due).map(([word])=>word)}
 export function wrongWords(){const s=getState();
-return Object.entries(s.records).filter(([,r])=>(r.errors||0)>0).sort((a,b)=>(b[1].errors||0)-(a[1].errors||0)).map(([word])=>word)}
+return Object.entries(s.records).filter(([,r])=>!r.slain&&(r.errors||0)>0).sort((a,b)=>(b[1].errors||0)-(a[1].errors||0)).map(([word])=>word)}
+
+export function slayWord(word,source){
+const s=getState(),old=s.records[word]||{};
+if(old.slain)return old;
+const slayBackup={level:old.level||0,correctStreak:old.correctStreak||0,tailStage:!!old.tailStage,errors:old.errors||0,step:old.step||0,due:old.due||0,todayDoneDate:old.todayDoneDate||''};
+s.records[word]={...old,source:source||old.source,drawn:true,slain:true,slainAt:Date.now(),slayBackup,level:4,correctStreak:3,tailStage:true,errors:0,step:0,due:0};
+saveState(s);return s.records[word]}
+
+export function restoreSlainWord(word){
+const s=getState(),old=s.records[word]||{};
+if(!old.slain)return old;
+const next={...old,...(old.slayBackup||{level:0,correctStreak:0,tailStage:false,errors:0,step:0,due:0}),slain:false};
+if(!next.todayDoneDate)delete next.todayDoneDate;delete next.slainAt;delete next.slayBackup;delete next.slainCompletedToday;s.records[word]=next;saveState(s);return next}
