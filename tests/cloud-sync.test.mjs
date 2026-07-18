@@ -27,7 +27,7 @@ assert.equal(syncSummary(merged).poolDone,1);
 const seenAt=Date.now()-1000;
 const conflict=mergeSnapshots({version:1,savedAt:4,data:{
   ky5_settings:{mode:'gaokao',daily:1},
-  ky5_state:{records:{recent:{lastSeen:seenAt,correctStreak:1,drawn:true}},history:{},rounds:{gaokao:1,kaoyan:1}},
+  ky5_state:{records:{recent:{lastSeen:new Date(seenAt).toISOString(),correctStreak:1,drawn:true}},history:{},rounds:{gaokao:1,kaoyan:1}},
   ky5_pool:{date:today,mode:'gaokao',items:['replacement'],completed:[],locked:[],updatedAt:seenAt+500}
 }},remote);
 assert.deepEqual(conflict.data.ky5_pool.items,['recent'],'a newer replacement pool should recover today recent correct words');
