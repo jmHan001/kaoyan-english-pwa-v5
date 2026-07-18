@@ -125,7 +125,7 @@ function buildQueue(){
 
 await loadVocabulary();
 bindInteractiveEnglish();
-await warmSpeechVoices();
+void warmSpeechVoices();
 queue=buildQueue().filter(word=>findWord(word));
 if(!queue.length){
   finishStudy(mode==='today'?'今日任务已完成，可以做小测或加背。':mode==='quiz'?'小测暂无可用单词。先背几个词，再来验收。':'本组暂无可背单词。');
