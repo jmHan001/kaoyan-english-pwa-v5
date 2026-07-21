@@ -93,6 +93,7 @@ h1,h2{color:var(--ink)}
 .sync-pill{background:transparent;color:var(--muted);border-color:var(--line);border-radius:14px}
 .sync-pill.configured{background:#eef6f3;color:#337b68;border-color:#d8e9e3}
 .sync-pill.busy{background:#f5f2e7;color:#7c6734;border-color:#e9e0c9}
+.sync-pill.offline{background:#f5f2e7;color:#7c6734;border-color:#e9e0c9}
 .sync-pill.error,.sync-pill.missing{background:#fbf0f1;color:var(--red);border-color:#efd9dc}
 .home-hidden-stats{display:none}
 .home-support{display:grid;gap:14px}

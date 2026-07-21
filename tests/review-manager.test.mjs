@@ -27,8 +27,8 @@ const{rate,dueWords,wrongWords,slayWord,restoreSlainWord}=await import('../revie
   saveState(state);
   const slain=slayWord('difficult','kaoyan');
   assert.equal(slain.slain,true);
-  assert.equal(slain.level,4);
-  assert.equal(slain.errors,0);
+  assert.equal(slain.level,1,'slay should not falsify mastery');
+  assert.equal(slain.errors,4,'slay should preserve learning history');
   assert.equal(wrongWords().includes('difficult'),false);
   assert.equal(dueWords().includes('difficult'),false);
   const restored=restoreSlainWord('difficult');
@@ -49,8 +49,8 @@ const{rate,dueWords,wrongWords,slayWord,restoreSlainWord}=await import('../revie
   const third=rate('abandon',3,'kaoyan');
   assert.equal(second.correctStreak,2);
   assert.equal(third.correctStreak,3);
-  assert.equal(third.tailStage,true);
-  assert.equal(third.level,4);
+  assert.equal(third.tailStage,false,'same-day recognition must not become long-term mastery');
+  assert.equal(third.level,2);
 }
 
 console.log('review-manager tests passed');

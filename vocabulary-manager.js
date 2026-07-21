@@ -1,5 +1,5 @@
 export const KEYS={state:'ky5_state',settings:'ky5_settings',pool:'ky5_pool',migration:'ky5_migration'};
-import{localDateKey}from'./date-utils.js?v=5.8.0';
+import{localDateKey}from'./date-utils.js?v=6.0.0';
 const fallback=[
  {word:'ability',translation:'n. 能力；才干',source:'both'},{word:'adapt',translation:'v. 适应；改编',source:'both'},{word:'assume',translation:'v. 假定；承担',source:'kaoyan'},{word:'benefit',translation:'n. 益处 v. 受益',source:'both'},{word:'challenge',translation:'n. 挑战 v. 质疑',source:'both'},{word:'decline',translation:'v. 下降；拒绝',source:'kaoyan'},{word:'evidence',translation:'n. 证据',source:'both'},{word:'feature',translation:'n. 特征 v. 以…为特色',source:'both'},{word:'generate',translation:'v. 产生',source:'kaoyan'},{word:'maintain',translation:'v. 保持；维护',source:'both'},{word:'perspective',translation:'n. 观点；视角',source:'kaoyan'},{word:'relevant',translation:'adj. 相关的',source:'kaoyan'}
 ];
@@ -23,7 +23,7 @@ function uniqueSource(items,source){
  return map;
 }
 export function getSettings(){return read(KEYS.settings,{mode:'smart',daily:20})}
-export function saveSettings(v){localStorage.setItem(KEYS.settings,JSON.stringify(v))}
+export function saveSettings(v){localStorage.setItem(KEYS.settings,JSON.stringify({...v,updatedAt:Date.now()}))}
 export function getState(){return read(KEYS.state,{records:{},rounds:{gaokao:1,kaoyan:1},streak:0,lastStudyDate:'',history:{}})}
 export function saveState(v){localStorage.setItem(KEYS.state,JSON.stringify(v))}
 export async function loadVocabulary(){

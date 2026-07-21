@@ -1,4 +1,4 @@
-import{playPronunciation}from'./audio-engine.js?v=5.6.17';
+import{playPronunciation}from'./audio-engine.js?v=6.0.0';
 
 const prefixes={anti:'反、抗',auto:'自己',co:'共同',de:'向下、去除',dis:'否定、分离',inter:'在……之间',mis:'错误',pre:'在前',re:'再次、向后',sub:'在下',trans:'跨越、转变',un:'否定'};
 const suffixes={able:'能够……的',al:'形容词或名词后缀',er:'人或物',ful:'充满……的',ify:'使……化',ing:'动作或过程',ion:'动作、状态名词',ist:'从事者',ity:'性质、状态',ive:'具有……性质的',less:'没有……的',ly:'副词后缀',ment:'行为或结果',ness:'性质、状态',ous:'具有……的'};
@@ -128,6 +128,36 @@ export function coreTranslation(wordOrItem,text,limit=3){
   const chosen=groups.map((item,index)=>({...item,index,rank:priority[item.pos]??9})).sort((a,b)=>a.rank-b.rank||a.index-b.index).slice(0,limit);
   let last='';
   return chosen.map(item=>{const prefix=item.pos&&item.pos!==last?`${item.pos}. `:'';last=item.pos;return`${prefix}${item.text}`}).join('；')||source;
+}
+
+function normalizeMeaning(value){
+  return String(value||'').toLowerCase()
+    .replace(/[a-z]+\./g,'')
+    .replace(/[（(][^）)]*[）)]/g,'')
+    .replace(/[^\u3400-\u9fffa-z0-9]+/g,'')
+    .replace(/^(表示|指|意为|意思是)/,'')
+    .replace(/[的地得]$/,'')
+    .trim();
+}
+
+export function acceptedMeanings(wordOrItem,text,limit=16){
+  const source=cleanTranslation(wordOrItem,text),out=[],seen=new Set();
+  for(const raw of source.replace(/([a-z]+\.)/gi,'；$1 ').split(/[；;，,、/]/)){
+    const display=String(raw||'').replace(/^[a-z]+\.\s*/i,'').replace(/[（(][^）)]*[）)]/g,'').trim();
+    const normalized=normalizeMeaning(display);
+    if(!display||!normalized||seen.has(normalized)||stopWords.has(normalized))continue;
+    if(normalized.length===1&&['有','使','做','是','在','到','为'].includes(normalized))continue;
+    seen.add(normalized);out.push({display,normalized});
+    if(out.length>=limit)break;
+  }
+  return out;
+}
+
+export function matchCoreMeaning(input,wordOrItem,text){
+  const entered=String(input||'').split(/[；;，,、/\s]+/).map(normalizeMeaning).filter(Boolean);
+  if(!entered.length)return{correct:false,accepted:acceptedMeanings(wordOrItem,text).map(x=>x.display)};
+  const accepted=acceptedMeanings(wordOrItem,text),correct=entered.some(value=>accepted.some(item=>value===item.normalized||(value.length>=2&&item.normalized.length>=2&&(item.normalized.includes(value)||value.includes(item.normalized)))));
+  return{correct,accepted:accepted.map(x=>x.display),matched:correct?entered.find(value=>accepted.some(item=>value===item.normalized||(value.length>=2&&item.normalized.length>=2&&(item.normalized.includes(value)||value.includes(item.normalized))))):''};
 }
 
 export function rootHint(word){

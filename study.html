@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#fbfaf8">
 <title>拾词 · 背单词</title>
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -11,10 +11,10 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="memory.css">
 <link rel="stylesheet" href="enhancements.css?v=5.6.25">
-<link rel="stylesheet" href="choices.css?v=5.7.5">
+<link rel="stylesheet" href="choices.css?v=6.0.0">
 <link rel="stylesheet" href="interactive-english.css?v=5.6.17">
-<link rel="stylesheet" href="premium-theme.css?v=5.7.4">
-<script src="theme.js?v=5.7.0" defer></script>
+<link rel="stylesheet" href="premium-theme.css?v=6.0.0">
+<script src="theme.js?v=6.0.0" defer></script>
 </head>
 <body class="study-page">
 <main class="study-shell">
@@ -32,10 +32,22 @@
 </div>
 <div>
 <p class="phonetic" id="source"></p>
-<div class="word-line"><h2 class="word" id="word">加载中</h2><span class="memory-badge" id="memoryBadge">连续正确 0/3</span></div>
+<div class="word-line"><h2 class="word" id="word">加载中</h2><span class="memory-badge" id="memoryBadge">初见</span></div>
 <div class="recall-cue" id="recallCue">先回忆，再选择正确的中文释义</div>
 <div class="swipe-cue" id="swipeCue">右滑回到上一个单词</div>
 <p class="phonetic" id="phonetic"></p>
+<div class="context-question hidden" id="contextQuestion">
+  <span>结合句子判断这个词的含义</span>
+  <p id="contextSentence"></p>
+</div>
+<form class="meaning-recall hidden" id="meaningRecall" autocomplete="off">
+  <label for="recallAnswer">输入你想到的一个中文核心意思</label>
+  <div class="meaning-recall-row">
+    <input class="field" id="recallAnswer" name="recallAnswer" inputmode="text" maxlength="24" placeholder="例如：丰富" aria-describedby="recallHelp">
+    <button class="btn" id="submitRecall" type="submit">确认回忆</button>
+  </div>
+  <small id="recallHelp">不用输入完整释义，命中一个核心意思即可。</small>
+</form>
 <div class="choice-grid" id="choices" aria-label="中文释义选项"></div>
 <div class="choice-feedback hidden" id="choiceFeedback" aria-live="polite"></div>
 <div class="memory-pack hidden" id="memoryPack">
@@ -49,6 +61,7 @@
 <div class="toolbar study-actions">
 <button class="btn secondary" data-voice="en-US">美音</button>
 <button class="btn secondary" data-voice="en-GB">英音</button>
+<button class="btn secondary hidden" id="showChoices">显示选项</button>
 <button class="btn secondary" id="reveal">不会，显示答案</button>
 <button class="btn hidden" id="nextWord">下一词</button>
 </div>
@@ -60,13 +73,13 @@
 <div class="modal-card compact-modal slay-modal-card">
 <span class="section-kicker">斩词</span>
 <h2 id="slayWord">当前单词</h2>
-<p class="muted">斩掉后视为已掌握，不再进入今日待背、错词回炉和到期复习。以后可以在主页“学习记录”中恢复。</p>
+<p class="muted">斩掉后会从学习计划中移除，但不会伪装成“已掌握”。原来的学习记录会保留，以后可在主页“学习记录”中恢复。</p>
 <div class="toolbar slay-confirm-actions">
 <button class="btn secondary" id="cancelSlay" type="button">取消</button>
 <button class="btn danger" id="confirmSlay" type="button">确认斩词</button>
 </div>
 </div>
 </div>
-<script type="module" src="study.js?v=5.8.2"></script>
+<script type="module" src="study.js?v=6.0.0"></script>
 </body>
 </html>

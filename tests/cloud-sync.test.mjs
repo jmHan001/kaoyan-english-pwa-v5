@@ -34,4 +34,24 @@ assert.deepEqual(conflict.data.ky5_pool.items,['recent'],'a newer replacement po
 assert.deepEqual(conflict.data.ky5_pool.completed,['recent']);
 assert.equal(conflict.data.ky5_state.records.recent.todayDoneDate,today);
 
+const masteredAt=Date.parse('2026-07-20T08:00:00+08:00');
+const failedAt=masteredAt+86400000;
+const staleMastery={memoryVersion:2,lastSeen:masteredAt,lastPassedAt:masteredAt,drawn:true,recognitionCount:2,recallPassDates:['2026-07-18','2026-07-19'],contextPassDates:['2026-07-20'],stabilityDays:20,difficulty:4,tailStage:true,level:4};
+const freshFailure={memoryVersion:2,lastSeen:failedAt,lastFailedAt:failedAt,lastPassedAt:masteredAt-1000,cycleStartedAt:failedAt,drawn:true,recognitionCount:2,recallPassDates:[],contextPassDates:[],needsRelearning:true,errors:1,lapses:1,stabilityDays:2,difficulty:6,tailStage:false,level:1};
+const failureWins=mergeSnapshots({version:2,savedAt:failedAt,data:{ky5_state:{records:{fragile:freshFailure},history:{},rounds:{gaokao:1,kaoyan:1}}}},{version:2,savedAt:masteredAt,data:{ky5_state:{records:{fragile:staleMastery},history:{},rounds:{gaokao:1,kaoyan:1}}}});
+assert.equal(failureWins.data.ky5_state.records.fragile.needsRelearning,true,'newer failure must survive cross-device merge');
+assert.deepEqual(failureWins.data.ky5_state.records.fragile.recallPassDates,[],'stale mastery must not resurrect the current correct cycle');
+assert.equal(syncSummary(failureWins).mastered,0);
+
+const recoveryPass={...freshFailure,lastSeen:failedAt+1000,lastPassedAt:failedAt+1000,needsRelearning:false,recognitionCount:3};
+const recoveryWins=mergeSnapshots({version:2,savedAt:failedAt+1000,data:{ky5_state:{records:{fragile:recoveryPass},history:{},rounds:{gaokao:1,kaoyan:1}}}},{version:2,savedAt:masteredAt,data:{ky5_state:{records:{fragile:staleMastery},history:{},rounds:{gaokao:1,kaoyan:1}}}});
+assert.deepEqual(recoveryWins.data.ky5_state.records.fragile.recallPassDates,[],'a recognition after failure must not revive stale recall passes');
+assert.equal(syncSummary(recoveryWins).mastered,0);
+
+const settingsWinner=mergeSnapshots({version:2,savedAt:1,data:{ky5_settings:{mode:'gaokao',daily:10,updatedAt:100}}},{version:2,savedAt:2,data:{ky5_settings:{mode:'kaoyan',daily:30,updatedAt:200}}});
+assert.equal(settingsWinner.data.ky5_settings.daily,30,'the latest settings edit should win across devices');
+
+const favoriteWinner=mergeSnapshots({version:2,savedAt:1,data:{ky5_state:{records:{focus:{drawn:true,favorite:false,updatedAt:100}},history:{},rounds:{gaokao:1,kaoyan:1}}}},{version:2,savedAt:2,data:{ky5_state:{records:{focus:{drawn:true,favorite:true,updatedAt:200}},history:{},rounds:{gaokao:1,kaoyan:1}}}});
+assert.equal(favoriteWinner.data.ky5_state.records.focus.favorite,true,'the latest favorite edit should win across devices');
+
 console.log('cloud-sync tests passed');

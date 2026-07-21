@@ -1,7 +1,7 @@
 import{loadVocabulary,allWords,findWord,getState}from'./vocabulary-manager.js';
 import{add}from'./learning-pool.js';
-import{rootHint,keyPoint,nearWords,speak,cleanTranslation}from'./knowledge.js?v=5.6.21';
-import{bindInteractiveEnglish,makeInteractiveText,sentenceAudioButton}from'./interactive-english.js?v=5.6.17';
+import{rootHint,keyPoint,nearWords,speak,cleanTranslation}from'./knowledge.js?v=6.0.0';
+import{bindInteractiveEnglish,makeInteractiveText,sentenceAudioButton}from'./interactive-english.js?v=6.0.0';
 
 const $=s=>document.querySelector(s);
 await loadVocabulary();

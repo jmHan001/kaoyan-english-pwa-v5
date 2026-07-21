@@ -1,0 +1,10 @@
+{
+  "name": "shici-pwa",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node scripts/run-tests.mjs",
+    "audit:vocabulary": "node scripts/audit-vocabulary.mjs",
+    "check:pwa": "node scripts/check-pwa-assets.mjs"
+  }
+}

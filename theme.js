@@ -3,8 +3,9 @@ warm:{bg:'#fbfaf8',paper:'#fffefd',ink:'#0b1a42',muted:'#77798a',line:'#e8e4e1',
 day:{bg:'#f6f7fb',paper:'#ffffff',ink:'#14213d',muted:'#72798a',line:'#e0e4ec',accent:'#526ebf','accent-strong':'#405ca9',soft:'#edf1f9'},
 dark:{bg:'#111025',paper:'#1a1935',ink:'#f4f0ea',muted:'#aaa6bd',line:'#343151',accent:'#9a90ff','accent-strong':'#8277ec',soft:'#242144'}
 };
-const THEME_VERSION='5.7.0';
-if(localStorage.getItem('ky5_theme_version')!==THEME_VERSION){localStorage.setItem('ky5_theme','warm');localStorage.setItem('ky5_theme_version',THEME_VERSION)}
+const THEME_VERSION='6.0.0';
+if(!localStorage.getItem('ky5_theme'))localStorage.setItem('ky5_theme','warm');
+localStorage.setItem('ky5_theme_version',THEME_VERSION);
 
 function applyTheme(name){const t=themes[name]||themes.warm;
 Object.entries(t).forEach(([k,v])=>document.documentElement.style.setProperty(`--${k}`,v));
@@ -13,14 +14,6 @@ document.documentElement.style.colorScheme=name==='dark'?'dark':'light';
 localStorage.setItem('ky5_theme',name);
 document.querySelector('#themeSelect')?.setAttribute('data-value',name)}
 document.head.insertAdjacentHTML('beforeend','<style>[data-theme="dark"] .btn:not(.secondary):not(.danger){background:var(--accent);color:#111025}[data-theme="dark"] .btn.accent{background:var(--accent);color:#111025}</style>');
-let lastTouchEnd=0;
-document.addEventListener('touchend',e=>{
-const tag=e.target?.tagName;
-if(['INPUT','TEXTAREA','SELECT'].includes(tag))return;
-const now=Date.now();
-if(now-lastTouchEnd<320)e.preventDefault();
-lastTouchEnd=now;
-},{passive:false});
 document.addEventListener('DOMContentLoaded',()=>{const nav=document.querySelector('.nav');
 if(nav){if(!nav.querySelector('[href="lookup.html"]'))nav.insertAdjacentHTML('beforeend','<a href="lookup.html">查词</a><a href="exam.html">真题</a>');
 const wrap=document.createElement('label');

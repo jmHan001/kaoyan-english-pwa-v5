@@ -8,6 +8,17 @@ function translationKey(item){
   return normalizeText(item?.translation).toLowerCase();
 }
 
+function partOfSpeech(item){
+  const matches=[...normalizeText(item?.translation).matchAll(/(?:^|[；;]\s*)(n|v|adj|adv|prep|conj|pron|num)\./gi)];
+  return new Set(matches.map(match=>match[1].toLowerCase()));
+}
+
+function distractorScore(answer,item){
+  const answerPos=partOfSpeech(answer),itemPos=partOfSpeech(item),samePos=[...answerPos].some(pos=>itemPos.has(pos));
+  const a=translationKey(answer).length,b=translationKey(item).length,lengthFit=Math.max(0,24-Math.abs(a-b));
+  return(samePos?100:0)+lengthFit;
+}
+
 function addDistractors(target,picked,seenWords,seenTranslations,items,blockedWords=new Set()){
   for(const item of items||[]){
     if(picked.length>=target)break;
@@ -45,8 +56,9 @@ export function buildChoiceOptions(answer,preferredGroups=[],fallbackItems=[],li
   const seenTranslations=new Set([translationKey(answer)].filter(Boolean));
   const target=Math.max(0,limit-1);
   const blocked=blockedSet(recentWords);
-  const groups=preferredGroups.map(group=>sampledOptions(group||[],random,48));
-  const fallback=sampledOptions(fallbackItems||[],random,128);
+  const ranked=items=>sampledOptions(items||[],random,96).map((item,index)=>({item,index,score:distractorScore(answer,item)})).sort((a,b)=>b.score-a.score||a.index-b.index).map(x=>x.item);
+  const groups=preferredGroups.map(ranked);
+  const fallback=ranked(fallbackItems||[]);
   for(const group of groups){
     addDistractors(target,picked,seenWords,seenTranslations,group,blocked);
   }

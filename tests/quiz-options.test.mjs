@@ -77,4 +77,17 @@ const fallback=[
   assert(!distractors.includes('charlie'));
 }
 
+{
+  const mixed=[
+    {word:'motion',translation:'n. 运动'},
+    {word:'visible',translation:'adj. 可见的'},
+    {word:'retain',translation:'v. 保留'},
+    {word:'withdraw',translation:'v. 撤回'},
+    {word:'release',translation:'v. 释放'}
+  ];
+  const options=buildChoiceOptions(answer,[mixed],fallback,4,()=>0);
+  const distractors=options.filter(x=>x.word!=='abandon');
+  assert.equal(distractors.every(item=>/^v\./.test(item.translation)),true,'same-part-of-speech distractors should be preferred');
+}
+
 console.log('quiz-options tests passed');

@@ -1,8 +1,8 @@
 import{loadVocabulary,findWord}from'./vocabulary-manager.js';
 import{add}from'./learning-pool.js';
 import{FIELD_KEYS,findDuplicateSentence,parseStructuredSentenceMaterial}from'./sentence-parser.mjs';
-import{bindInteractiveEnglish,makeInteractiveText,sentenceAudioButton}from'./interactive-english.js?v=5.6.17';
-import{playPronunciation}from'./audio-engine.js?v=5.6.17';
+import{bindInteractiveEnglish,makeInteractiveText,sentenceAudioButton}from'./interactive-english.js?v=6.0.0';
+import{playPronunciation}from'./audio-engine.js?v=6.0.0';
 
 const $=s=>document.querySelector(s);
 const KEYS={sentence:'ky5_sentence',history:'ky5_sentence_history'};
