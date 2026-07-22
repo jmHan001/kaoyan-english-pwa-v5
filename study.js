@@ -4,6 +4,7 @@ import{rate,dueWords,wrongWords,slayWord,migrateMemoryModel}from'./review-manage
 import{memoryLabel,questionTypeForRecord,memoryStage}from'./memory-engine.js?v=6.0.0';
 import{rootHint,keyPoint,nearWords,cleanTranslation,coreTranslation,matchCoreMeaning}from'./knowledge.js?v=6.0.0';
 import{buildChoiceOptions}from'./quiz-options.js?v=6.0.0';
+import{todayQuizCandidates}from'./quiz-scope.js?v=6.0.1';
 import{bindInteractiveEnglish,makeInteractiveText,sentenceAudioButton}from'./interactive-english.js?v=6.0.0';
 import{playPronunciation,warmSpeechVoices}from'./audio-engine.js?v=6.0.0';
 import{localDateKey}from'./date-utils.js?v=6.0.0';
@@ -58,10 +59,8 @@ function learnedWords(view='all'){
   }).sort((a,b)=>(Number(b[1].lastSeen)||0)-(Number(a[1].lastSeen)||0)).map(([word])=>word);
 }
 function quizCandidates(){
-  const state=getState(),seen=new Set(),items=[];
-  for(const word of pool?.items||[]){const item=findWord(word);if(item&&!state.records[item.word]?.slain&&!seen.has(item.word)){seen.add(item.word);items.push(item.word)}}
-  for(const word of [...wrongWords(),...dueWords()]){const item=findWord(word);if(item&&!state.records[item.word]?.slain&&!seen.has(item.word)){seen.add(item.word);items.push(item.word)}}
-  return items;
+  const state=getState();
+  return todayQuizCandidates(pool,state.records,today()).filter(word=>findWord(word));
 }
 function quizBook(){try{return JSON.parse(localStorage.getItem('ky5_quiz')||'{}')}catch{return{}}}
 function saveQuizAttempt(){
@@ -174,7 +173,7 @@ function buildQueue(){
 
 await loadVocabulary();migrateMemoryModel();bindInteractiveEnglish();void warmSpeechVoices();
 queue=buildQueue().filter(word=>findWord(word));
-if(!queue.length)finishStudy(mode==='today'?'今日任务已完成，可以做小测或加背。':mode==='quiz'?'小测暂无可用单词。先背几个词，再来验收。':'本组暂无可背单词。');else render();
+if(!queue.length)finishStudy(mode==='today'?'今日任务已完成，可以做小测或加背。':mode==='quiz'?'今日学习池里还没有已背过的单词。先完成几个今日词，再来验收。':'本组暂无可背单词。');else render();
 
 document.addEventListener('click',event=>{
   const voice=event.target.closest?.('[data-voice]')?.dataset.voice;if(voice){const word=current();if(word)void playPronunciation(word.word,voice)}
