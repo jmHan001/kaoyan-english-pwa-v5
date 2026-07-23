@@ -20,6 +20,15 @@
 .meaning-recall-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
 .meaning-recall-row .field { width: 100%; min-width: 0; font-size: 1.05rem; }
 .meaning-recall small { display: block; margin-top: 9px; color: var(--muted); line-height: 1.5; }
+.acquisition-card { width: min(100%,620px); margin: 18px auto 0; padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--soft); text-align: left; }
+.acquisition-step { display: block; margin-bottom: 10px; color: var(--muted); font-size: .8rem; font-weight: 780; letter-spacing: .06em; }
+.acquisition-meaning { margin: 0 0 10px; color: var(--ink); font-size: clamp(1.35rem,4vw,2rem); font-weight: 850; line-height: 1.35; }
+.acquisition-meaning.concealed { min-height: 2.7rem; border-radius: 10px; background: var(--line); color: transparent; user-select: none; }
+.acquisition-instruction { margin: 0; color: var(--muted); line-height: 1.65; }
+.acquisition-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.acquisition-pass { background: var(--green); border-color: var(--green); }
+.deep-learning { margin-top: 14px; border-top: 1px solid var(--line); }
+.deep-learning > summary { padding: 14px 0 4px; color: var(--muted); font-weight: 760; cursor: pointer; }
 .context-question {
   width: min(100%, 680px);
   margin: 14px auto 18px;
@@ -201,6 +210,7 @@
 [data-theme="dark"] .favorite-toggle.active { background: #49391f; color: #ffd98a; border-color: #896e38; }
 [data-theme="dark"] .slay-toggle { background: #2b3630; color: #ffb8c0; border-color: #4a584f; }
 [data-theme="dark"] .meaning-recall,
+[data-theme="dark"] .acquisition-card,
 [data-theme="dark"] .context-question { background: var(--soft); border-color: var(--line); }
 .slay-modal-card h2 { margin: 6px 0 10px; font-size: clamp(2rem,8vw,3.8rem); }
 .slay-confirm-actions { margin: 20px 0 0; }
@@ -226,6 +236,7 @@
 .today-task progress::-moz-progress-bar { background: var(--accent); border-radius: 999px; }
 .today-task.complete { background: #e7f1e9; border-color: #8cb298; }
 .today-task.complete progress::-webkit-progress-value { background: var(--green); }
+.today-start.is-complete { pointer-events: none; opacity: .66; }
 [data-theme="dark"] .today-task { background: #263129; }
 [data-theme="dark"] .today-task.complete { background: #294332; border-color: #6aa87b; }
 .acceptance-panel { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 14px; margin: -4px 0 18px; padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: #f5f0e7; }

@@ -3,6 +3,22 @@ import{upgradeMemoryRecord,memoryStage,memoryLabel,questionTypeForRecord,recordM
 
 const day1=Date.parse('2026-07-20T08:00:00+08:00');
 assert.equal(memoryStage({drawn:true}),'new','being drawn into a pool is not evidence of recognition');
+assert.equal(questionTypeForRecord({drawn:true}),'acquisition','a new word should start with guided acquisition instead of choices');
+
+let firstExposure=recordMemoryAnswer({drawn:true},{correct:false,kind:'acquisition',at:day1,date:'2026-07-20'});
+assert.equal(memoryStage(firstExposure),'relearning');
+assert.equal(firstExposure.errors||0,0,'not recalling during first acquisition must not create a wrong-word lapse');
+assert.equal(firstExposure.acquisitionMisses,1);
+assert.equal(firstExposure.due,day1+10*60000);
+firstExposure=recordMemoryAnswer(firstExposure,{correct:true,kind:'acquisition',at:day1+20*60000,date:'2026-07-20'});
+assert.equal(memoryStage(firstExposure),'recognition');
+assert.equal(firstExposure.acquisitionSuccessCount,1);
+assert.equal(questionTypeForRecord(firstExposure),'recall','after acquisition, the next proof must be no-hint recall');
+
+const v2History=upgradeMemoryRecord({memoryVersion:2,recognitionCount:2,recallPassDates:['2026-07-18'],contextPassDates:[],recallHistoryDates:['2026-07-10'],contextHistoryDates:[],stabilityDays:4,difficulty:5,lapses:1});
+assert.equal(v2History.recallPassDates.length,1,'v2 recall history must survive the v3 migration');
+assert.equal(v2History.memoryVersion,3);
+
 let record=upgradeMemoryRecord({drawn:true,correctStreak:3,tailStage:true,level:4,lastSeen:day1-86400000});
 assert.equal(memoryStage(record),'recognition','legacy 3-in-a-row data must wait for active recall verification');
 assert.match(memoryLabel(record),/待主动验证/);

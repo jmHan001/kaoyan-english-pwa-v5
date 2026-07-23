@@ -1,9 +1,9 @@
 const DAY=24*60*60*1000;
 const MINUTE=60*1000;
-export const MEMORY_VERSION=2;
+export const MEMORY_VERSION=3;
 export const STAGES={
   new:{label:'初见',level:0},
-  recognition:{label:'能认',level:2},
+  recognition:{label:'已接触',level:2},
   recall:{label:'能想起',level:3},
   context:{label:'待语境验证',level:3},
   mastered:{label:'已掌握',level:4},
@@ -20,6 +20,26 @@ export function upgradeMemoryRecord(value={}){
     return{
       ...value,
       recognitionCount:Math.max(0,Number(value.recognitionCount)||0),
+      acquisitionSuccessCount:Math.max(0,Number(value.acquisitionSuccessCount)||0),
+      acquisitionMisses:Math.max(0,Number(value.acquisitionMisses)||0),
+      exposureDates:uniqueDates(value.exposureDates),
+      recallPassDates:uniqueDates(value.recallPassDates),
+      contextPassDates:uniqueDates(value.contextPassDates),
+      recallHistoryDates:uniqueDates(value.recallHistoryDates),
+      contextHistoryDates:uniqueDates(value.contextHistoryDates),
+      stabilityDays:clamp(value.stabilityDays||1,.25,3650),
+      difficulty:clamp(value.difficulty||5,1,10),
+      lapses:Math.max(0,Number(value.lapses)||0)
+    };
+  }
+  if(Number(value.memoryVersion)>=2){
+    return{
+      ...value,
+      memoryVersion:MEMORY_VERSION,
+      recognitionCount:Math.max(0,Number(value.recognitionCount)||0),
+      acquisitionSuccessCount:Math.max(0,Number(value.acquisitionSuccessCount)||0),
+      acquisitionMisses:Math.max(0,Number(value.acquisitionMisses)||0),
+      exposureDates:uniqueDates(value.exposureDates),
       recallPassDates:uniqueDates(value.recallPassDates),
       contextPassDates:uniqueDates(value.contextPassDates),
       recallHistoryDates:uniqueDates(value.recallHistoryDates),
@@ -36,6 +56,9 @@ export function upgradeMemoryRecord(value={}){
     ...value,
     memoryVersion:MEMORY_VERSION,
     recognitionCount:seen?Math.max(1,Number(value.correctStreak)||0):0,
+    acquisitionSuccessCount:0,
+    acquisitionMisses:0,
+    exposureDates:[],
     recallPassDates:[],
     contextPassDates:[],
     recallHistoryDates:[],
@@ -74,7 +97,8 @@ export function questionTypeForRecord(value={},options={}){
   // 旧版的“连续答对三次/四级掌握”只有选择题证据，升级后必须先做一次
   // 无提示回忆，避免把排除选项形成的熟悉感继续当成真实掌握。
   if(record.legacyQualified&&stage==='recognition')return'recall';
-  if(stage==='new'||stage==='recognition'||stage==='relearning')return'recognition';
+  if(stage==='new')return'acquisition';
+  if(stage==='recognition'||stage==='relearning')return'recall';
   if(stage==='recall')return'recall';
   if(stage==='context')return options.hasContext===false?'recall':'context';
   if(stage==='mastered')return(Number(record.masteredReviewCount)||0)%3===2&&options.hasContext!==false?'context':'recall';
@@ -99,8 +123,24 @@ function intervalFor(record,kind){
 }
 
 export function recordMemoryAnswer(value={},answer={}){
-  const record=upgradeMemoryRecord(value),at=Number(answer.at)||Date.now(),date=String(answer.date||new Date(at).toISOString().slice(0,10)),kind=['recognition','recall','context'].includes(answer.kind)?answer.kind:'recognition',correct=Boolean(answer.correct),lastAt=Number(record.lastSeen)||0,elapsedDays=lastAt?Math.max(0,(at-lastAt)/DAY):0;
+  const record=upgradeMemoryRecord(value),at=Number(answer.at)||Date.now(),date=String(answer.date||new Date(at).toISOString().slice(0,10)),kind=['acquisition','recognition','recall','context'].includes(answer.kind)?answer.kind:'recognition',correct=Boolean(answer.correct),lastAt=Number(record.lastSeen)||0,elapsedDays=lastAt?Math.max(0,(at-lastAt)/DAY):0;
   let next={...record,lastSeen:at,lastReviewAt:at,lastQuestionType:kind,drawn:true};
+  if(kind==='acquisition'){
+    next.exposureDates=uniqueDates([...record.exposureDates,date]);
+    next.lastAcquisitionAt=at;
+    next.correctStreak=correct?Math.min((record.correctStreak||0)+1,99):0;
+    next.recognitionCount=Math.max(1,record.recognitionCount||0);
+    next.acquisitionSuccessCount=(record.acquisitionSuccessCount||0)+(correct?1:0);
+    next.acquisitionMisses=(record.acquisitionMisses||0)+(correct?0:1);
+    next.needsRelearning=!correct;
+    next.lastPassedAt=correct?at:record.lastPassedAt;
+    next.lastFailedAt=correct?record.lastFailedAt:at;
+    next.level=correct?2:1;
+    next.tailStage=false;
+    next.difficulty=clamp(record.difficulty+(correct?-.08:.18),1,10);
+    next.due=correct?at+DAY:at+10*MINUTE;
+    return next;
+  }
   if(!correct){
     next={
       ...next,

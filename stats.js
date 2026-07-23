@@ -1,6 +1,6 @@
 import{allWords,getState,getSettings}from'./vocabulary-manager.js';
-import{dueWords,wrongWords}from'./review-manager.js?v=6.0.0';
-import{memoryStage,memorySummary}from'./memory-engine.js?v=6.0.0';
+import{dueWords,wrongWords}from'./review-manager.js?v=6.1.1';
+import{memoryStage,memorySummary}from'./memory-engine.js?v=6.1.1';
 
 export function stats(){
   const all=allWords(),state=getState(),calc=source=>{

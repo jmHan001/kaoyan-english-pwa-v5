@@ -130,6 +130,16 @@ export function coreTranslation(wordOrItem,text,limit=3){
   return chosen.map(item=>{const prefix=item.pos&&item.pos!==last?`${item.pos}. `:'';last=item.pos;return`${prefix}${item.text}`}).join('；')||source;
 }
 
+export function learningMeaning(wordOrItem,text){
+  const source=cleanTranslation(wordOrItem,text);
+  const first=source.split(/[；;]/).map(value=>value.trim()).find(Boolean)||source;
+  const single=first.split(/\s+(?=[a-z]+\.\s*)/i)[0].trim();
+  const match=single.match(/^([a-z]+)\.\s*(.*)$/i);
+  if(!match)return single.split(/[，,、]/)[0].trim()||source;
+  const sense=match[2].split(/[，,、]/)[0].trim();
+  return sense?`${match[1].toLowerCase()}. ${sense}`:single;
+}
+
 function normalizeMeaning(value){
   return String(value||'').toLowerCase()
     .replace(/[a-z]+\./g,'')

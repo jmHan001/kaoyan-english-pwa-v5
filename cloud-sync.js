@@ -4,7 +4,7 @@ const DEFAULT_CONFIG={endpoint:'https://lkhfdjbavyylzerogyun.supabase.co',anonKe
 const DATA_KEYS=['ky5_state','ky5_settings','ky5_pool','ky5_quiz','ky5_reading','ky5_sentence','ky5_sentence_context','ky5_sentence_history','ky5_exam_text','ky5_theme'];
 const encoder=new TextEncoder(),decoder=new TextDecoder();
 import{localDateKey,localDayStart,timestampValue}from'./date-utils.js?v=6.0.0';
-import{upgradeMemoryRecord,memoryStage}from'./memory-engine.js?v=6.0.0';
+import{upgradeMemoryRecord,memoryStage}from'./memory-engine.js?v=6.1.1';
 
 const parse=(value,fallback=null)=>{try{return JSON.parse(value)??fallback}catch{return fallback}};
 const b64=bytes=>{let s='';bytes.forEach(b=>s+=String.fromCharCode(b));return btoa(s)};

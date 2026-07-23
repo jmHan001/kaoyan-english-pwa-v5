@@ -1,6 +1,6 @@
 import{getState,saveState}from'./vocabulary-manager.js';
 import{localDateKey}from'./date-utils.js?v=6.0.0';
-import{MEMORY_VERSION,upgradeMemoryRecord,recordMemoryAnswer,memoryStage}from'./memory-engine.js?v=6.0.0';
+import{MEMORY_VERSION,upgradeMemoryRecord,recordMemoryAnswer,memoryStage}from'./memory-engine.js?v=6.1.1';
 
 export function migrateMemoryModel(){const s=getState();let migrated=0;for(const[word,value]of Object.entries(s.records||{})){if(Number(value?.memoryVersion)>=MEMORY_VERSION)continue;s.records[word]=upgradeMemoryRecord(value);migrated++}if(Number(s.memoryVersion)<MEMORY_VERSION||migrated){s.memoryVersion=MEMORY_VERSION;saveState(s)}return{done:true,migrated}}
 

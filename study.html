@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="memory.css">
 <link rel="stylesheet" href="enhancements.css?v=5.6.25">
-<link rel="stylesheet" href="choices.css?v=6.0.0">
+<link rel="stylesheet" href="choices.css?v=6.1.2">
 <link rel="stylesheet" href="interactive-english.css?v=5.6.17">
 <link rel="stylesheet" href="premium-theme.css?v=6.0.0">
 <script src="theme.js?v=6.0.0" defer></script>
@@ -40,6 +40,17 @@
   <span>结合句子判断这个词的含义</span>
   <p id="contextSentence"></p>
 </div>
+<section class="acquisition-card hidden" id="acquisitionCard" aria-live="polite">
+  <span class="acquisition-step" id="acquisitionStep">先建立一个清楚的连接</span>
+  <p class="acquisition-meaning" id="acquisitionMeaning"></p>
+  <p class="acquisition-instruction" id="acquisitionInstruction">听一遍发音，只记这一个核心意思。</p>
+  <div class="acquisition-actions">
+    <button class="btn" id="startAcquisition" type="button">遮住意思，开始回忆</button>
+    <button class="btn hidden" id="checkAcquisition" type="button">检查答案</button>
+    <button class="btn acquisition-pass hidden" id="acquisitionPass" type="button">刚才想对了</button>
+    <button class="btn secondary hidden" id="acquisitionMiss" type="button">刚才没想起</button>
+  </div>
+</section>
 <form class="meaning-recall hidden" id="meaningRecall" autocomplete="off">
   <label for="recallAnswer">输入你想到的一个中文核心意思</label>
   <div class="meaning-recall-row">
@@ -52,11 +63,14 @@
 <div class="choice-feedback hidden" id="choiceFeedback" aria-live="polite"></div>
 <div class="memory-pack hidden" id="memoryPack">
   <p class="meaning" id="meaning"></p>
-  <details class="full-meaning"><summary>查看完整释义</summary><p id="fullMeaning"></p></details>
-  <p class="syllable" id="syllable"></p>
-  <p class="example" id="example"></p>
-  <p class="example-cn" id="exampleCn"></p>
-  <div id="wordKnowledge"></div>
+  <details class="deep-learning">
+    <summary>需要时再看例句、搭配与词根</summary>
+    <details class="full-meaning"><summary>查看完整释义</summary><p id="fullMeaning"></p></details>
+    <p class="syllable" id="syllable"></p>
+    <p class="example" id="example"></p>
+    <p class="example-cn" id="exampleCn"></p>
+    <div id="wordKnowledge"></div>
+  </details>
 </div>
 <div class="toolbar study-actions">
 <button class="btn secondary" data-voice="en-US">美音</button>
@@ -80,6 +94,6 @@
 </div>
 </div>
 </div>
-<script type="module" src="study.js?v=6.0.1"></script>
+<script type="module" src="study.js?v=6.1.2"></script>
 </body>
 </html>

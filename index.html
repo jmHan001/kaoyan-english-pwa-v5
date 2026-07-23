@@ -11,11 +11,11 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="memory.css">
 <link rel="stylesheet" href="enhancements.css?v=5.6.25">
-<link rel="stylesheet" href="choices.css?v=6.0.0">
+<link rel="stylesheet" href="choices.css?v=6.1.2">
 <link rel="stylesheet" href="interactive-english.css?v=5.6.17">
 <link rel="stylesheet" href="premium-theme.css?v=6.0.0">
 <script src="theme.js?v=6.0.0" defer></script>
-<script type="module" src="app.js?v=6.0.1">
+<script type="module" src="app.js?v=6.1.2">
 </script>
 </head>
 <body>
@@ -66,7 +66,6 @@
 <option value="kaoyan">考研模式</option>
 </select>
 <select id="daily" class="field">
-<option>10</option>
 <option selected>20</option>
 <option>30</option>
 <option>50</option>
@@ -162,8 +161,8 @@
 <div class="modal hidden" id="dailyModal">
 <div class="modal-card compact-modal">
 <h2>今天背多少个？</h2>
-<p class="muted">输入 1—300。确认后，今日背词数量会立即同步更新。</p>
-<input class="field" id="dailyCustomInput" type="number" min="1" max="300" inputmode="numeric" aria-label="自定义今日背词数量">
+<p class="muted">输入 20—300。现阶段每天至少接触 20 个，记忆稳定后可逐步增加。</p>
+<input class="field" id="dailyCustomInput" type="number" min="20" max="300" inputmode="numeric" aria-label="自定义今日背词数量">
 <div class="toolbar" style="margin-top:16px">
 <button class="btn secondary" id="cancelDaily" type="button">取消</button>
 <button class="btn" id="confirmDaily" type="button">确认数量</button>
