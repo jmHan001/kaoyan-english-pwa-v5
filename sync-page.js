@@ -1,4 +1,4 @@
-import{getSyncConfig,saveSyncConfig,clearSyncConfig,isConfigured,createSyncId,syncNow,exportSyncFile,importSyncFile,startAutoSync}from'./cloud-sync.js?v=6.0.0';
+import{getSyncConfig,saveSyncConfig,clearSyncConfig,isConfigured,createSyncId,syncNow,exportSyncFile,importSyncFile,startAutoSync}from'./cloud-sync.js?v=6.2.0';
 import{migrateMemoryModel}from'./review-manager.js?v=6.1.1';
 migrateMemoryModel();
 const $=s=>document.querySelector(s),config=getSyncConfig();

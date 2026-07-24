@@ -1,8 +1,8 @@
 import{loadVocabulary,findWord,allWords,getState,saveState}from'./vocabulary-manager.js';
-import{getPool}from'./learning-pool.js?v=6.0.0';
+import{getPool}from'./learning-pool.js?v=6.2.0';
 import{rate,dueWords,wrongWords,slayWord,migrateMemoryModel}from'./review-manager.js?v=6.1.1';
 import{memoryLabel,questionTypeForRecord,memoryStage}from'./memory-engine.js?v=6.1.1';
-import{rootHint,keyPoint,nearWords,cleanTranslation,coreTranslation,learningMeaning,matchCoreMeaning}from'./knowledge.js?v=6.1.1';
+import{rootHint,keyPoint,nearWords,cleanTranslation,coreTranslation,learningMeaning,matchCoreMeaning}from'./knowledge.js?v=6.2.0';
 import{buildChoiceOptions}from'./quiz-options.js?v=6.0.0';
 import{todayQuizCandidates}from'./quiz-scope.js?v=6.0.1';
 import{bindInteractiveEnglish,makeInteractiveText,sentenceAudioButton}from'./interactive-english.js?v=6.0.0';

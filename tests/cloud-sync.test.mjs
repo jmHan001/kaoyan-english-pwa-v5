@@ -54,4 +54,16 @@ assert.equal(settingsWinner.data.ky5_settings.daily,30,'the latest settings edit
 const favoriteWinner=mergeSnapshots({version:2,savedAt:1,data:{ky5_state:{records:{focus:{drawn:true,favorite:false,updatedAt:100}},history:{},rounds:{gaokao:1,kaoyan:1}}}},{version:2,savedAt:2,data:{ky5_state:{records:{focus:{drawn:true,favorite:true,updatedAt:200}},history:{},rounds:{gaokao:1,kaoyan:1}}}});
 assert.equal(favoriteWinner.data.ky5_state.records.focus.favorite,true,'the latest favorite edit should win across devices');
 
+const acquisitionMerge=mergeSnapshots({version:2,savedAt:2,data:{
+  ky5_state:{records:{fresh:{memoryVersion:3,drawn:true,lastSeen:200,todayExposedDate:today,todayRecalledDate:today,exposureDates:[today],acquisitionSuccessCount:1}},history:{},rounds:{gaokao:1,kaoyan:1}},
+  ky5_pool:{date:today,mode:'gaokao',items:['fresh'],completed:['fresh'],locked:[],manual:[],updatedAt:2}
+}},{version:2,savedAt:1,data:{
+  ky5_state:{records:{fresh:{memoryVersion:3,drawn:true,lastSeen:100,exposureDates:['2026-07-23'],acquisitionMisses:1}},history:{},rounds:{gaokao:1,kaoyan:1}},
+  ky5_pool:{date:today,mode:'gaokao',items:['fresh','focus'],completed:[],locked:[],manual:['focus'],updatedAt:1}
+}});
+assert.equal(acquisitionMerge.data.ky5_state.records.fresh.todayRecalledDate,today,'same-day recall evidence must survive sync');
+assert.deepEqual(acquisitionMerge.data.ky5_state.records.fresh.exposureDates.sort(),['2026-07-23',today].sort());
+assert.equal(acquisitionMerge.data.ky5_pool.manual.includes('focus'),true,'manual daily-pool additions must survive sync');
+assert.equal(acquisitionMerge.data.ky5_pool.items.includes('focus'),true);
+
 console.log('cloud-sync tests passed');

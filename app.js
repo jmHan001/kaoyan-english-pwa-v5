@@ -1,10 +1,10 @@
 import{loadVocabulary,findWord,allWords,getSettings,saveSettings,getState,saveState,migrateLegacy,exportAll}from'./vocabulary-manager.js';
-import{getPool,remove,replace,toggleLock,add,fill,resize,extend}from'./learning-pool.js?v=6.0.0';
+import{getPool,remove,replace,toggleLock,add,fill,resize,extend}from'./learning-pool.js?v=6.2.0';
 import{rate,dueWords,wrongWords,restoreSlainWord,migrateMemoryModel}from'./review-manager.js?v=6.1.1';
 import{memoryLabel,memoryStage}from'./memory-engine.js?v=6.1.1';
 import{stats}from'./stats.js?v=6.0.0';
-import{rootHint,keyPoint,nearWords,cleanTranslation,coreTranslation}from'./knowledge.js?v=6.0.0';
-import{getSyncConfig,isConfigured,startAutoSync}from'./cloud-sync.js?v=6.0.0';
+import{rootHint,keyPoint,nearWords,cleanTranslation,coreTranslation}from'./knowledge.js?v=6.2.0';
+import{getSyncConfig,isConfigured,startAutoSync}from'./cloud-sync.js?v=6.2.0';
 import{buildChoiceOptions}from'./quiz-options.js?v=6.0.0';
 import{todayQuizCandidates}from'./quiz-scope.js?v=6.0.1';
 import{bindInteractiveEnglish,makeInteractiveText,sentenceAudioButton}from'./interactive-english.js?v=6.0.0';

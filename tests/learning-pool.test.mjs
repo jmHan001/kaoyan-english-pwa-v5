@@ -40,4 +40,18 @@ assert.equal(after.items.length,1);
 const removed=before.find(word=>!after.items.includes(word));
 assert.equal(manager.getState().records[removed],undefined,'shrinking should release an unstudied generated word');
 
+manager.saveSettings({mode:'smart',daily:2});
+const separatedState=manager.getState();
+delete separatedState.records.alpha.todayDoneDate;
+separatedState.records.beta={drawn:true,source:'gaokao',lastSeen:Date.now()-86400000,recognitionCount:1};
+manager.saveState(separatedState);
+localStorage.setItem(manager.KEYS.pool,JSON.stringify({date:today,mode:'smart',items:['beta','delta'],completed:[],locked:[],manual:[]}));
+const separated=poolManager.getPool();
+assert.equal(separated.items.includes('beta'),false,'a previously studied word must not leak into the daily new-word pool');
+assert.equal(separated.items.length,2,'a removed review word should be replaced with an unseen word');
+
+localStorage.setItem(manager.KEYS.pool,JSON.stringify({date:today,mode:'smart',items:['beta','delta'],completed:[],locked:[],manual:['beta']}));
+const manuallyAdded=poolManager.getPool();
+assert.equal(manuallyAdded.items.includes('beta'),true,'an old word explicitly added by the user today should remain in the pool');
+
 console.log('learning-pool tests passed');

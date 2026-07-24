@@ -17,4 +17,10 @@ assert.equal(matchCoreMeaning('遗弃',abandon).correct,true);
 const model={word:'model',translation:'n. 模型；典型；模范；v. 模拟；塑造'};
 assert.equal(learningMeaning(model),'n. 模型','first learning should use the dictionary-leading core sense instead of always preferring verbs');
 
+const conduct={word:'conduct',translation:'v. 导电；带领；n. 进行；行为；实施'};
+assert.equal(matchCoreMeaning('进行',conduct).correct,true,'a listed non-primary sense must be accepted');
+assert.equal(matchCoreMeaning('开展',conduct).correct,true,'a clear related Chinese meaning must be accepted');
+assert.equal(matchCoreMeaning('指挥',conduct).correct,true,'normalization must not strip the meaningful 指 character');
+assert.equal(matchCoreMeaning('天气',conduct).correct,false,'fuzzy matching must not accept unrelated meanings');
+
 console.log('meaning recall tests passed');

@@ -99,7 +99,27 @@ const synonymGroups=[
   ['therefore','thus','hence'],
   ['various','different','diverse']
 ];
-const stopWords=new Set(['人名','名词','动词','形容词','副词','介词','连词','代词','缩写','表示','用于','东西','事情','一种','一个','某人','某事','进行','使','有','的','地','得']);
+const stopWords=new Set(['人名','名词','动词','形容词','副词','介词','连词','代词','缩写','表示','用于','东西','事情','一种','一个','某人','某事','使','有','的','地','得']);
+const meaningAliasOverrides={
+  conduct:['进行','实施','开展','执行','从事','带领','引导','领导','率领','指挥','管理','导电','传导','行为','品行']
+};
+const meaningFamilies=[
+  ['进行','实施','开展','执行','实行','从事','举办','做'],
+  ['带领','引导','领导','率领','指挥'],
+  ['导电','传导'],
+  ['增加','增长','增多','上升','提高','提升'],
+  ['减少','降低','下降','缩减','削减'],
+  ['得到','获得','取得','赢得'],
+  ['保持','维持','维护','保存'],
+  ['允许','许可','准许','同意'],
+  ['重要','关键','重大','主要'],
+  ['可能','也许','或许'],
+  ['影响','作用'],
+  ['帮助','协助','援助'],
+  ['选择','挑选','选取'],
+  ['建立','创建','创立','设立'],
+  ['解决','处理','应对']
+].map(group=>new Set(group));
 const translationOverrides={
   rich:'adj. 富有的；丰富的；肥沃的；油腻的；n. 富人',
   abundant:'adj. 丰富的；充裕的；大量的',
@@ -145,13 +165,13 @@ function normalizeMeaning(value){
     .replace(/[a-z]+\./g,'')
     .replace(/[（(][^）)]*[）)]/g,'')
     .replace(/[^\u3400-\u9fffa-z0-9]+/g,'')
-    .replace(/^(表示|指|意为|意思是)/,'')
+    .replace(/^(表示|意为|意思是|指的是|指代)/,'')
     .replace(/[的地得]$/,'')
     .trim();
 }
 
 export function acceptedMeanings(wordOrItem,text,limit=16){
-  const source=cleanTranslation(wordOrItem,text),out=[],seen=new Set();
+  const source=cleanTranslation(wordOrItem,text),word=cleanWord(typeof wordOrItem==='string'?wordOrItem:wordOrItem?.word),out=[],seen=new Set();
   for(const raw of source.replace(/([a-z]+\.)/gi,'；$1 ').split(/[；;，,、/]/)){
     const display=String(raw||'').replace(/^[a-z]+\.\s*/i,'').replace(/[（(][^）)]*[）)]/g,'').trim();
     const normalized=normalizeMeaning(display);
@@ -160,14 +180,33 @@ export function acceptedMeanings(wordOrItem,text,limit=16){
     seen.add(normalized);out.push({display,normalized});
     if(out.length>=limit)break;
   }
+  for(const display of meaningAliasOverrides[word]||[]){
+    const normalized=normalizeMeaning(display);
+    if(!normalized||seen.has(normalized)||out.length>=limit)continue;
+    seen.add(normalized);out.push({display,normalized});
+  }
   return out;
+}
+
+function sameMeaningFamily(left,right){return meaningFamilies.some(group=>group.has(left)&&group.has(right))}
+function editDistance(left,right){
+  const a=[...left],b=[...right],row=Array.from({length:b.length+1},(_,i)=>i);
+  for(let i=1;i<=a.length;i++){let previous=row[0];row[0]=i;for(let j=1;j<=b.length;j++){const old=row[j];row[j]=Math.min(row[j]+1,row[j-1]+1,previous+(a[i-1]===b[j-1]?0:1));previous=old}}
+  return row[b.length];
+}
+function meaningsMatch(value,item){
+  const target=item.normalized;
+  if(value===target)return true;
+  if(value.length>=2&&target.length>=2&&(target.includes(value)||value.includes(target)))return true;
+  if(sameMeaningFamily(value,target))return true;
+  return value.length>=3&&target.length>=3&&Math.abs(value.length-target.length)<=1&&editDistance(value,target)<=1;
 }
 
 export function matchCoreMeaning(input,wordOrItem,text){
   const entered=String(input||'').split(/[；;，,、/\s]+/).map(normalizeMeaning).filter(Boolean);
   if(!entered.length)return{correct:false,accepted:acceptedMeanings(wordOrItem,text).map(x=>x.display)};
-  const accepted=acceptedMeanings(wordOrItem,text),correct=entered.some(value=>accepted.some(item=>value===item.normalized||(value.length>=2&&item.normalized.length>=2&&(item.normalized.includes(value)||value.includes(item.normalized)))));
-  return{correct,accepted:accepted.map(x=>x.display),matched:correct?entered.find(value=>accepted.some(item=>value===item.normalized||(value.length>=2&&item.normalized.length>=2&&(item.normalized.includes(value)||value.includes(item.normalized))))):''};
+  const accepted=acceptedMeanings(wordOrItem,text),matched=entered.find(value=>accepted.some(item=>meaningsMatch(value,item)))||'';
+  return{correct:Boolean(matched),accepted:accepted.map(x=>x.display),matched};
 }
 
 export function rootHint(word){
